@@ -6,6 +6,9 @@ use serde_json::Value;
 mod buses;
 mod routes;
 mod stops;
+mod terminal;
+
+use terminal::Terminal;
 
 fn parse_list<R: Read, T>(input: R) -> anyhow::Result<Vec<T>>
 where

@@ -6,6 +6,8 @@ use anyhow::{anyhow, bail, ensure, Result};
 use chrono::NaiveTime;
 use serde_json::Value;
 
+use super::Terminal;
+
 pub const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusStop!A1:100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
 #[derive(Debug, Clone)]
@@ -14,7 +16,7 @@ pub struct Stop {
     pub name_th: String,
     pub name: String,
     pub description: Option<String>,
-    pub route_direction: Direction,
+    pub route_direction: Terminal,
     pub longitude: f64,
     pub latitude: f64,
     pub schedule: Vec<NaiveTime>,
@@ -42,25 +44,7 @@ impl FromStr for BusDisplay {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum Direction {
-    Airport,
-    Rawai,
-}
-
-impl FromStr for Direction {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        match s {
-            "Airport" => Ok(Self::Airport),
-            "Rawai" => Ok(Self::Rawai),
-            _ => bail!("unknown direction: {}", s),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-struct RouteDirection(Direction);
+struct RouteDirection(Terminal);
 
 impl FromStr for RouteDirection {
     type Err = anyhow::Error;
@@ -69,7 +53,7 @@ impl FromStr for RouteDirection {
         s.split(" --> ")
             .nth(1)
             .ok_or_else(|| anyhow!("missing route direction"))
-            .and_then(Direction::from_str)
+            .and_then(Terminal::from_str)
             .map(Self)
     }
 }

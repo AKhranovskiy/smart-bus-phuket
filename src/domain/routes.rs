@@ -7,45 +7,25 @@ use chrono::NaiveTime;
 use serde::{de, Deserialize, Deserializer};
 use serde_json::Value;
 
+use super::Terminal;
+
 const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusOperate!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Route {
     pub position: String,
-    pub start: TerminalStop,
+    pub start: Terminal,
     pub departure: NaiveTime,
     pub color_changed: NaiveTime,
     pub arrival: NaiveTime,
-    pub destination: TerminalStop,
+    pub destination: Terminal,
     #[serde(deserialize_with = "Direction::deserialize")]
     pub direction: Direction,
     pub icon: String,
 }
 
-#[derive(Debug, Copy, Clone, Deserialize)]
-pub enum TerminalStop {
-    Airport,
-    Rawai,
-    Kata,
-    Patong,
-}
-
-impl FromStr for TerminalStop {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        match s {
-            "Airport" => Ok(Self::Airport),
-            "Rawai" => Ok(Self::Rawai),
-            "Kata" => Ok(Self::Kata),
-            "Patong" => Ok(Self::Patong),
-            _ => bail!("unknown terminal stop: {}", s),
-        }
-    }
-}
-
 #[derive(Debug, Copy, Clone)]
-pub struct Direction(TerminalStop);
+pub struct Direction(Terminal);
 
 impl FromStr for Direction {
     type Err = anyhow::Error;
