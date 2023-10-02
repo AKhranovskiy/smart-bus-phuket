@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::{borrow::Cow, convert::TryInto, io::Read, str::FromStr};
+use std::{borrow::Cow, str::FromStr};
 
 use anyhow::{anyhow, bail, ensure, Result};
 use chrono::NaiveTime;
@@ -9,21 +9,17 @@ use serde_json::Value;
 
 const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusOperate!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
-pub fn fetch_bus_operations() -> Result<Vec<BusOperation>> {
-    parse_bus_operations(ureq::get(ENDPOINT).call()?.into_reader())
-}
-
 #[derive(Debug, Clone, Deserialize)]
-pub struct BusOperation {
-    position: String,
-    start: TerminalStop,
-    departure: NaiveTime,
-    color_changed: NaiveTime,
-    arrival: NaiveTime,
-    destination: TerminalStop,
+pub struct Route {
+    pub position: String,
+    pub start: TerminalStop,
+    pub departure: NaiveTime,
+    pub color_changed: NaiveTime,
+    pub arrival: NaiveTime,
+    pub destination: TerminalStop,
     #[serde(deserialize_with = "Direction::deserialize")]
-    direction: Direction,
-    icon: String,
+    pub direction: Direction,
+    pub icon: String,
 }
 
 #[derive(Debug, Copy, Clone, Deserialize)]
@@ -74,26 +70,7 @@ impl Direction {
     }
 }
 
-fn parse_bus_operations<R: Read>(input: R) -> Result<Vec<BusOperation>> {
-    #[derive(Debug, Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct Input {
-        #[serde(skip)]
-        range: String,
-        #[serde(skip)]
-        major_dimension: String,
-        values: Vec<Value>,
-    }
-
-    serde_json::from_reader::<_, Input>(input)?
-        .values
-        .iter()
-        .skip(1) // Skip "header" row
-        .map(TryInto::try_into)
-        .collect::<Result<_, _>>()
-}
-
-impl TryFrom<&Value> for BusOperation {
+impl TryFrom<&Value> for Route {
     type Error = anyhow::Error;
 
     fn try_from(value: &Value) -> Result<Self, Self::Error> {
@@ -146,20 +123,22 @@ impl AsRef<NaiveTime> for SmartBusTime {
 
 #[cfg(test)]
 mod tests {
+    use crate::domain::{fetch, parse_list};
+
     use super::*;
 
-    const INPUT: &[u8] = include_bytes!("bus_operate.json");
+    const INPUT: &[u8] = include_bytes!("routes.json");
 
     #[test]
-    fn test_parse_bus_operations() {
-        let ops = parse_bus_operations(INPUT).expect("Parsed bus operations");
+    fn test_parse() {
+        let ops = parse_list::<_, Route>(INPUT).expect("Parsed bus operations");
         assert_eq!(34, ops.len());
     }
 
     #[test]
     #[ignore]
-    fn test_fetch_bus_operations() {
-        let ops = fetch_bus_operations().expect("Fetched bus operations");
+    fn test_fetch() {
+        let ops = fetch::<Route>(ENDPOINT).expect("Fetched bus operations");
         assert_eq!(34, ops.len());
     }
 }

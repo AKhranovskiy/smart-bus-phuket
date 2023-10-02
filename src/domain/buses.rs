@@ -1,7 +1,5 @@
 #![allow(dead_code)]
 
-use std::{convert::TryInto, io::Read};
-
 use anyhow::{bail, ensure, Result};
 use chrono::{NaiveDate, NaiveTime};
 use serde::Deserialize;
@@ -9,19 +7,15 @@ use serde_json::Value;
 
 const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/Bus!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
-pub fn fetch_buses() -> Result<Vec<Bus>> {
-    parse_buses(ureq::get(ENDPOINT).call()?.into_reader())
-}
-
 #[derive(Debug, Clone)]
 pub struct Bus {
-    no: u8,
-    licence_plate_no: String,
-    bus_id: String,
+    pub no: u8,
+    pub licence_plate_no: String,
+    pub bus_id: String,
     _icon: String,
-    service_status: ServiceStatus,
-    direction: Direction,
-    operate_position: String,
+    pub service_status: ServiceStatus,
+    pub direction: Direction,
+    pub operate_position: String,
     _a: String,
     _b: String,
     _c: String,
@@ -30,8 +24,8 @@ pub struct Bus {
     _f: String,
     _concat: String,
     _run: String,
-    date: NaiveDate,
-    time: NaiveTime,
+    pub date: NaiveDate,
+    pub time: NaiveTime,
 }
 
 #[derive(Debug, Copy, Clone, Deserialize)]
@@ -46,23 +40,6 @@ pub enum Direction {
     A,
     #[serde(rename = "1")]
     B,
-}
-
-fn parse_buses<R: Read>(input: R) -> Result<Vec<Bus>> {
-    #[derive(Debug, Deserialize)]
-    #[serde(rename_all = "camelCase")]
-    struct Input {
-        range: String,
-        major_dimension: String,
-        values: Vec<Value>,
-    }
-
-    serde_json::from_reader::<_, Input>(input)?
-        .values
-        .iter()
-        .skip(1) // Skip "header" row
-        .map(TryInto::try_into)
-        .collect::<Result<_, _>>()
 }
 
 impl TryFrom<&Value> for Bus {
@@ -95,7 +72,7 @@ impl TryFrom<&Value> for Bus {
             _b: get_str(8)?,
             _c: get_str(9)?,
             _d: get_str(10)?,
-            _e: get_str(11)?, // 10
+            _e: get_str(11)?,
             _f: get_str(12)?,
             _concat: get_str(13)?,
             _run: get_str(14)?,
@@ -107,20 +84,22 @@ impl TryFrom<&Value> for Bus {
 
 #[cfg(test)]
 mod tests {
+    use crate::domain::{fetch, parse_list};
+
     use super::*;
 
-    const INPUT: &[u8] = include_bytes!("bus.json");
+    const INPUT: &[u8] = include_bytes!("buses.json");
 
     #[test]
-    fn test_parse_buses() {
-        let buses = parse_buses(INPUT).expect("Parsed buses");
+    fn test_parse() {
+        let buses = parse_list::<_, Bus>(INPUT).expect("Parsed buses");
         assert_eq!(11, buses.len());
     }
 
     #[test]
     #[ignore]
-    fn test_fetch_buses() {
-        let buses = fetch_buses().expect("Fetched buses");
+    fn test_fetch() {
+        let buses = fetch::<Bus>(ENDPOINT).expect("Fetched buses");
         assert_eq!(11, buses.len());
     }
 }
