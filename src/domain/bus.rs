@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use std::convert::TryInto;
+use std::{convert::TryInto, io::Read};
 
 use anyhow::{bail, ensure, Result};
 use chrono::{NaiveDate, NaiveTime};
@@ -8,6 +8,10 @@ use serde::Deserialize;
 use serde_json::Value;
 
 const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/Bus!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
+
+pub fn fetch_buses() -> Result<Vec<Bus>> {
+    parse_buses(ureq::get(ENDPOINT).call()?.into_reader())
+}
 
 #[derive(Debug, Clone)]
 pub struct Bus {
@@ -44,7 +48,7 @@ pub enum Direction {
     B,
 }
 
-fn parse_buses(input: &[u8]) -> Result<Vec<Bus>> {
+fn parse_buses<R: Read>(input: R) -> Result<Vec<Bus>> {
     #[derive(Debug, Deserialize)]
     #[serde(rename_all = "camelCase")]
     struct Input {
@@ -53,7 +57,7 @@ fn parse_buses(input: &[u8]) -> Result<Vec<Bus>> {
         values: Vec<Value>,
     }
 
-    serde_json::from_slice::<Input>(input)?
+    serde_json::from_reader::<_, Input>(input)?
         .values
         .iter()
         .skip(1) // Skip "header" row
@@ -79,7 +83,6 @@ impl TryFrom<&Value> for Bus {
             s
         };
 
-        dbg!(&array);
         Ok(Self {
             no: get_str(0)?.parse()?,
             licence_plate_no: get_str(1)?,
@@ -111,8 +114,13 @@ mod tests {
     #[test]
     fn test_parse_buses() {
         let buses = parse_buses(INPUT).expect("Parsed buses");
+        assert_eq!(11, buses.len());
+    }
 
-        dbg!(&buses);
+    #[test]
+    #[ignore]
+    fn test_fetch_buses() {
+        let buses = fetch_buses().expect("Fetched buses");
         assert_eq!(11, buses.len());
     }
 }
