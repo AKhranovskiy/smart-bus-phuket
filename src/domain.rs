@@ -40,3 +40,28 @@ where
 {
     parse_list(ureq::get(endpoint).call()?.into_reader())
 }
+
+#[cfg(test)]
+#[macro_export]
+macro_rules! test_parse {
+    ($t:ty, $input:ident, $expected:expr) => {
+        #[test]
+        fn test_parse() {
+            let list = $crate::domain::parse_list::<_, $t>($input).expect("Parsed list");
+            assert_eq!($expected, list.len());
+        }
+    };
+}
+
+#[cfg(test)]
+#[macro_export]
+macro_rules! test_fetch {
+    ($t:ty, $endpoint:ident, $expected:expr) => {
+        #[test]
+        #[ignore]
+        fn test_fetch() {
+            let list = $crate::domain::fetch::<$t>($endpoint).expect("Fetched list");
+            assert_eq!($expected, list.len());
+        }
+    };
+}

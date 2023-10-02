@@ -126,22 +126,12 @@ impl TryFrom<&Value> for Stop {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{fetch, parse_list};
+    use crate::{test_fetch, test_parse};
 
     use super::*;
 
     const INPUT: &[u8] = include_bytes!("stops.json");
 
-    #[test]
-    fn test_parse() {
-        let stops = parse_list::<_, Stop>(INPUT).expect("Parsed bus stops");
-        assert_eq!(52, stops.len());
-    }
-
-    #[test]
-    #[ignore]
-    fn test_fetch() {
-        let stops = fetch::<Stop>(ENDPOINT).expect("Fetched bus stops");
-        assert_eq!(52, stops.len());
-    }
+    test_parse!(Stop, INPUT, 52);
+    test_fetch!(Stop, ENDPOINT, 52);
 }

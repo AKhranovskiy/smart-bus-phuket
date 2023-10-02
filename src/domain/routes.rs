@@ -103,22 +103,12 @@ impl AsRef<NaiveTime> for SmartBusTime {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{fetch, parse_list};
+    use crate::{test_fetch, test_parse};
 
     use super::*;
 
     const INPUT: &[u8] = include_bytes!("routes.json");
 
-    #[test]
-    fn test_parse() {
-        let ops = parse_list::<_, Route>(INPUT).expect("Parsed bus operations");
-        assert_eq!(34, ops.len());
-    }
-
-    #[test]
-    #[ignore]
-    fn test_fetch() {
-        let ops = fetch::<Route>(ENDPOINT).expect("Fetched bus operations");
-        assert_eq!(34, ops.len());
-    }
+    test_parse!(Route, INPUT, 34);
+    test_fetch!(Route, ENDPOINT, 34);
 }
