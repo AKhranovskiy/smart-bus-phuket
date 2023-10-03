@@ -9,14 +9,14 @@ macro_rules! wrap_f32_string {
         #[serde_as]
         #[derive(Debug, Clone, Copy, Deserialize)]
         #[serde(transparent)]
-        pub struct $name(#[serde_as(as = "DisplayFromStr")] f32);
+        pub struct $name(#[serde_as(as = "DisplayFromStr")] pub f32);
     };
 }
 
 macro_rules! wrap_f32 {
     ($name:ident) => {
         #[derive(Debug, Clone, Copy, Deserialize)]
-        pub struct $name(f32);
+        pub struct $name(pub f32);
     };
 }
 
@@ -41,6 +41,12 @@ macro_rules! impl_eq {
                 (self.0 - other).abs() < f32::EPSILON
             }
         }
+
+        impl AsRef<f32> for $name {
+            fn as_ref(&self) -> &f32 {
+                &self.0
+            }
+        }
     };
 }
 
@@ -56,17 +62,24 @@ impl_eq!(Heading);
 #[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
 pub struct Coordinates {
     #[serde(rename = "lng")]
-    longitude: Longitude,
+    pub longitude: Longitude,
     #[serde(rename = "lat")]
-    latitude: Latitude,
+    pub latitude: Latitude,
 }
 
 impl Coordinates {
-    pub fn new(longitude: Longitude, latitude: Latitude) -> Self {
+    pub const fn new(longitude: Longitude, latitude: Latitude) -> Self {
         Self {
             longitude,
             latitude,
         }
+    }
+
+    pub fn distance_to(self, other: Self) -> f64 {
+        geoutils::Location::from(self)
+            .distance_to(&geoutils::Location::from(other))
+            .unwrap()
+            .meters()
     }
 }
 
@@ -76,6 +89,12 @@ impl Display for Coordinates {
             "{:.6},{:.6}",
             self.longitude.0, self.latitude.0
         ))
+    }
+}
+
+impl From<Coordinates> for geoutils::Location {
+    fn from(value: Coordinates) -> Self {
+        Self::new(value.latitude.0, value.longitude.0)
     }
 }
 
@@ -108,5 +127,25 @@ mod tests {
             }
             .to_string()
         );
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn test_harvesine_distance() {
+        let a: geoutils::Location =
+            Coordinates::new(Longitude(98.36212), Latitude(7.892_785)).into();
+        let b: geoutils::Location = Coordinates::new(98.32612.into(), 7.77470.into()).into();
+
+        assert_eq!(13716.33, a.haversine_distance_to(&b).meters());
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn test_vyncenty_distance() {
+        let a: geoutils::Location =
+            Coordinates::new(Longitude(98.36212), Latitude(7.892_785)).into();
+        let b: geoutils::Location = Coordinates::new(98.32612.into(), 7.77470.into()).into();
+
+        assert_eq!(13649.882, a.distance_to(&b).unwrap().meters());
     }
 }

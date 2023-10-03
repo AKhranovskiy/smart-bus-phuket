@@ -3,6 +3,7 @@ use rust_socketio::{asynchronous::ClientBuilder, Event, Payload};
 use tokio::signal;
 
 mod domain;
+mod lookup;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

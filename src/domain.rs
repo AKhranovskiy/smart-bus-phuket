@@ -12,10 +12,11 @@ mod terminal;
 
 pub use coordinates::Coordinates;
 pub use location::Location;
+pub use stops::Stop;
 
 use terminal::Terminal;
 
-fn parse_list<R: Read, T>(input: R) -> anyhow::Result<Vec<T>>
+pub fn parse_list<R: Read, T>(input: R) -> anyhow::Result<Vec<T>>
 where
     T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
 {
@@ -39,7 +40,7 @@ where
 }
 
 #[allow(dead_code)]
-fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>
+pub fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>
 where
     T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
 {

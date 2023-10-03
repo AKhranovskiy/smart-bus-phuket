@@ -6,7 +6,7 @@ use anyhow::{anyhow, bail, ensure, Result};
 use chrono::NaiveTime;
 use serde_json::Value;
 
-use super::Terminal;
+use super::{Coordinates, Terminal};
 
 pub const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusStop!A1:100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
@@ -17,8 +17,7 @@ pub struct Stop {
     pub name: String,
     pub description: Option<String>,
     pub route_direction: Terminal,
-    pub longitude: f64,
-    pub latitude: f64,
+    pub coordinates: Coordinates,
     pub schedule: Vec<NaiveTime>,
     pub icon: String,
     pub color: String,
@@ -111,8 +110,10 @@ impl TryFrom<&Value> for Stop {
             name: get_str(2)?,
             description: StopDescription::from_str(&get_str(3)?)?.0,
             route_direction: RouteDirection::from_str(&get_str(4)?)?.0,
-            longitude: get_str(5)?.parse()?,
-            latitude: get_str(6)?.parse()?,
+            coordinates: Coordinates::new(
+                get_str(5)?.parse::<f32>()?.into(),
+                get_str(6)?.parse::<f32>()?.into(),
+            ),
             schedule: Schedule::from_str(&get_str(7)?)?.0,
             icon: get_str(8)?,
             color: get_str(9)?,

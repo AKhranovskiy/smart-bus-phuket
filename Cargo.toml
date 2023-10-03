@@ -9,6 +9,7 @@ edition = "2021"
 anyhow = "1.0.75"
 chrono = { version = "0.4.31", features = ["serde"] }
 futures-util = "0.3.28"
+geoutils = "0.5.1"
 rand = "0.8.5"
 rust_socketio = { version = "0.4.3", features = [
     "async",
