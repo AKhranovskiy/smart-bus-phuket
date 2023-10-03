@@ -4,9 +4,13 @@ use serde::Deserialize;
 use serde_json::Value;
 
 mod buses;
+mod coordinates;
+mod location;
 mod routes;
 mod stops;
 mod terminal;
+
+pub use location::Location;
 
 use terminal::Terminal;
 

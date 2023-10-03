@@ -8,8 +8,19 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.75"
 chrono = { version = "0.4.31", features = ["serde"] }
+futures-util = "0.3.28"
+rand = "0.8.5"
+rust_socketio = { version = "0.4.3", features = [
+    "async",
+    "async-callbacks",
+    "async-stream",
+    "tokio",
+    "futures-util",
+] }
 serde = { version = "1.0.188", features = ["derive"] }
+serde-this-or-that = { version = "0.4.2", features = ["derive"] }
 serde_json = { version = "1.0.107", features = ["preserve_order"] }
+serde_with = "3.3.0"
 tokio = { version = "1.32.0", features = ["full"] }
 tokio-tungstenite = { version = "0.20.1", features = ["tokio-native-tls"] }
 ureq = { version = "2.8.0", features = ["serde", "serde_json", "json"] }
