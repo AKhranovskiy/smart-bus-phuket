@@ -3,17 +3,17 @@ use std::borrow::Cow;
 use chrono::NaiveDateTime;
 use serde::{de, Deserialize, Deserializer};
 
-use crate::domain::coordinates::{Heading, Latitude, Longitude};
+use crate::domain::coordinates::Heading;
+
+use super::Coordinates;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct Location {
     #[serde(rename = "deviceno")]
     pub device_number: String,
-    #[serde(rename = "lat")]
-    pub latitude: Latitude,
-    #[serde(rename = "lng")]
-    pub longitude: Longitude,
+    #[serde(flatten)]
+    pub coordinates: Coordinates,
     #[serde(rename = "state")]
     pub state: u32,
     #[serde(rename = "speed")]
@@ -59,8 +59,7 @@ mod tests {
             location,
             Location {
                 device_number: "008800AB63".to_string(),
-                latitude: 7.882_165.into(),
-                longitude: 98.359_084.into(),
+                coordinates: Coordinates::new(98.359_084.into(), 7.882_165.into(),),
                 state: 1,
                 speed: 52,
                 heading: 53.2.into(),

@@ -10,6 +10,7 @@ mod routes;
 mod stops;
 mod terminal;
 
+pub use coordinates::Coordinates;
 pub use location::Location;
 
 use terminal::Terminal;

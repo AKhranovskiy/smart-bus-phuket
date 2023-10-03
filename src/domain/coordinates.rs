@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use serde::Deserialize;
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
@@ -51,6 +53,32 @@ impl_eq!(Latitude);
 wrap_f32!(Heading);
 impl_eq!(Heading);
 
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq, Eq)]
+pub struct Coordinates {
+    #[serde(rename = "lng")]
+    longitude: Longitude,
+    #[serde(rename = "lat")]
+    latitude: Latitude,
+}
+
+impl Coordinates {
+    pub fn new(longitude: Longitude, latitude: Latitude) -> Self {
+        Self {
+            longitude,
+            latitude,
+        }
+    }
+}
+
+impl Display for Coordinates {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{:.6},{:.6}",
+            self.longitude.0, self.latitude.0
+        ))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,6 +96,17 @@ mod tests {
         assert_eq!(
             Heading(53.2),
             serde_json::from_str::<Heading>("53.2").unwrap()
+        );
+    }
+    #[test]
+    fn test_display() {
+        assert_eq!(
+            "7.882165,98.359085",
+            Coordinates {
+                longitude: Longitude(7.882_165),
+                latitude: Latitude(98.359_085)
+            }
+            .to_string()
         );
     }
 }
