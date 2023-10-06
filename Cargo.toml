@@ -10,7 +10,9 @@ anyhow = "1.0.75"
 chrono = { version = "0.4.31", features = ["serde"] }
 futures-util = "0.3.28"
 geoutils = "0.5.1"
+itertools = "0.11.0"
 rand = "0.8.5"
+rangemap = { version = "1.4.0", features = ["nightly"] }
 rust_socketio = { version = "0.4.3", features = [
     "async",
     "async-callbacks",

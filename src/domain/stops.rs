@@ -106,8 +106,8 @@ impl TryFrom<&Value> for Stop {
 
         Ok(Self {
             order: get_str(0)?.parse()?,
-            name_th: get_str(1)?,
-            name: get_str(2)?,
+            name_th: get_str(1)?.trim().to_string(),
+            name: get_str(2)?.trim().to_string(),
             description: StopDescription::from_str(&get_str(3)?)?.0,
             route_direction: RouteDirection::from_str(&get_str(4)?)?.0,
             coordinates: Coordinates::new(

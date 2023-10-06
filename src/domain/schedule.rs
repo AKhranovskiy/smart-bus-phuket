@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
-use std::{borrow::Cow, str::FromStr};
+use std::str::FromStr;
 
 use anyhow::{anyhow, bail, ensure, Result};
 use chrono::NaiveTime;
-use serde::{de, Deserialize, Deserializer};
+use serde::Deserialize;
 use serde_json::Value;
 
 use super::Terminal;
@@ -19,8 +19,7 @@ pub struct Schedule {
     pub color_changed: NaiveTime,
     pub arrival: NaiveTime,
     pub destination: Terminal,
-    #[serde(deserialize_with = "Direction::deserialize")]
-    pub direction: Direction,
+    pub direction: Terminal,
     pub icon: String,
 }
 
@@ -39,16 +38,16 @@ impl FromStr for Direction {
     }
 }
 
-impl Direction {
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Cow::<&str>::deserialize(deserializer)?
-            .parse()
-            .map_err(de::Error::custom)
-    }
-}
+// impl Direction {
+//     pub fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
+//     where
+//         D: Deserializer<'de>,
+//     {
+//         Cow::<&str>::deserialize(deserializer)?
+//             .parse()
+//             .map_err(de::Error::custom)
+//     }
+// }
 
 impl TryFrom<&Value> for Schedule {
     type Error = anyhow::Error;
@@ -74,7 +73,7 @@ impl TryFrom<&Value> for Schedule {
             color_changed: *SmartBusTime::from_str(&get_str(3)?)?.as_ref(),
             arrival: *SmartBusTime::from_str(&get_str(4)?)?.as_ref(),
             destination: get_str(5)?.parse()?,
-            direction: get_str(6)?.parse()?,
+            direction: Direction::from_str(&get_str(6)?)?.0,
             icon: get_str(7)?,
         })
     }
@@ -87,7 +86,8 @@ impl FromStr for SmartBusTime {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        s.split_ascii_whitespace()
+        s.replace("12:00:00 AM", "23:59:59 PM")
+            .split_ascii_whitespace()
             .nth(0)
             .ok_or_else(|| anyhow!("missing input"))
             .and_then(|s| NaiveTime::parse_from_str(s, "%T").map_err(Into::into))
