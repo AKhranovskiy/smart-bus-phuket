@@ -12,7 +12,7 @@ use super::Terminal;
 const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusOperate!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Route {
+pub struct Schedule {
     pub position: String,
     pub start: Terminal,
     pub departure: NaiveTime,
@@ -50,7 +50,7 @@ impl Direction {
     }
 }
 
-impl TryFrom<&Value> for Route {
+impl TryFrom<&Value> for Schedule {
     type Error = anyhow::Error;
 
     fn try_from(value: &Value) -> Result<Self, Self::Error> {
@@ -107,8 +107,8 @@ mod tests {
 
     use super::*;
 
-    const INPUT: &[u8] = include_bytes!("routes.json");
+    const INPUT: &[u8] = include_bytes!("schedule.json");
 
-    test_parse!(Route, INPUT, 34);
-    test_fetch!(Route, ENDPOINT, 34);
+    test_parse!(Schedule, INPUT, 34);
+    test_fetch!(Schedule, ENDPOINT, 34);
 }

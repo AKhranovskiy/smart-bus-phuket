@@ -6,7 +6,7 @@ use serde_json::Value;
 mod buses;
 mod coordinates;
 mod location;
-mod routes;
+mod schedule;
 mod stops;
 mod terminal;
 
