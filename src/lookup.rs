@@ -7,7 +7,7 @@ mod tests {
         const STOPS: &[u8] = include_bytes!("domain/stops.json");
         let mut stops = parse_list::<_, Stop>(STOPS).unwrap();
 
-        let point = Coordinates::new(7.77208774295.into(), 98.3217882953.into());
+        let point = Coordinates::new(98.321_788.into(), 7.772_087.into());
         stops.sort_unstable_by(|a, b| {
             a.coordinates
                 .distance_to(point)

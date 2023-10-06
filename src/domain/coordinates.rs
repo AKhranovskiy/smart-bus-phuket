@@ -77,8 +77,7 @@ impl Coordinates {
 
     pub fn distance_to(self, other: Self) -> f64 {
         geoutils::Location::from(self)
-            .distance_to(&geoutils::Location::from(other))
-            .unwrap()
+            .haversine_distance_to(&geoutils::Location::from(other))
             .meters()
     }
 }
@@ -120,10 +119,10 @@ mod tests {
     #[test]
     fn test_display() {
         assert_eq!(
-            "7.882165,98.359085",
+            "98.359085,7.882165",
             Coordinates {
-                longitude: Longitude(7.882_165),
-                latitude: Latitude(98.359_085)
+                longitude: Longitude(98.359_085),
+                latitude: Latitude(7.882_165)
             }
             .to_string()
         );

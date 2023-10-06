@@ -111,8 +111,9 @@ impl TryFrom<&Value> for Stop {
             description: StopDescription::from_str(&get_str(3)?)?.0,
             route_direction: RouteDirection::from_str(&get_str(4)?)?.0,
             coordinates: Coordinates::new(
-                get_str(5)?.parse::<f32>()?.into(),
+                // JSON messes lat/lng.
                 get_str(6)?.parse::<f32>()?.into(),
+                get_str(5)?.parse::<f32>()?.into(),
             ),
             schedule: Schedule::from_str(&get_str(7)?)?.0,
             icon: get_str(8)?,
