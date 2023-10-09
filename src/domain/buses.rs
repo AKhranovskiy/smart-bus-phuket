@@ -1,31 +1,30 @@
 #![allow(dead_code)]
 
 use anyhow::{bail, ensure, Result};
-use chrono::{NaiveDate, NaiveTime};
+use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use serde::Deserialize;
 use serde_json::Value;
-
-pub const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/Bus!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
 #[derive(Debug, Clone)]
 pub struct Bus {
     pub no: u8,
     pub licence_plate_no: String,
     pub bus_id: String,
-    _icon: String,
+    // _icon: String,
     pub service_status: ServiceStatus,
     pub direction: Direction,
     pub operate_position: String,
-    _a: String,
-    _b: String,
-    _c: String,
-    _d: String,
-    _e: String,
-    _f: String,
-    _concat: String,
-    _run: String,
-    pub date: NaiveDate,
-    pub time: NaiveTime,
+    // _a: String,
+    // _b: String,
+    // _c: String,
+    // _d: String,
+    // _e: String,
+    // _f: String,
+    // _concat: String,
+    // _run: String,
+    pub date_time: NaiveDateTime,
+    // pub date: NaiveDate,
+    // pub time: NaiveTime,
 }
 
 #[derive(Debug, Copy, Clone, Deserialize)]
@@ -64,30 +63,35 @@ impl TryFrom<&Value> for Bus {
             no: get_str(0)?.parse()?,
             licence_plate_no: get_str(1)?,
             bus_id: get_str(2)?,
-            _icon: get_str(3)?,
+            // _icon: get_str(3)?,
             service_status: serde_json::from_value(array[4].clone())?,
             direction: serde_json::from_value(array[5].clone())?,
             operate_position: get_str(6)?,
-            _a: get_str(7)?,
-            _b: get_str(8)?,
-            _c: get_str(9)?,
-            _d: get_str(10)?,
-            _e: get_str(11)?,
-            _f: get_str(12)?,
-            _concat: get_str(13)?,
-            _run: get_str(14)?,
-            date: NaiveDate::parse_from_str(&get_str(15)?, "%d/%m/%Y")?,
-            time: NaiveTime::parse_from_str(&get_str(16)?, "%r")?,
+            // _a: get_str(7)?,
+            // _b: get_str(8)?,
+            // _c: get_str(9)?,
+            // _d: get_str(10)?,
+            // _e: get_str(11)?,
+            // _f: get_str(12)?,
+            // _concat: get_str(13)?,
+            // _run: get_str(14)?,
+            date_time: NaiveDateTime::new(
+                NaiveDate::parse_from_str(&get_str(15)?, "%d/%m/%Y")?,
+                NaiveTime::parse_from_str(&get_str(16)?, "%r")?,
+            ),
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{domain::TEST_BUSES, test_fetch, test_parse};
+    use crate::{
+        domain::{BUS_ENDPOINT, TEST_BUSES},
+        test_fetch, test_parse,
+    };
 
     use super::*;
 
     test_parse!(Bus, TEST_BUSES, 11);
-    test_fetch!(Bus, ENDPOINT, 11);
+    test_fetch!(Bus, BUS_ENDPOINT, 11);
 }

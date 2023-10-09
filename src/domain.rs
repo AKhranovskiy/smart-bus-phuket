@@ -21,39 +21,9 @@ pub use schedule::Schedule;
 pub use stops::Stop;
 pub use terminal::Terminal;
 
-pub use buses::ENDPOINT as BUS_ENDPOINT;
-pub use schedule::ENDPOINT as SCHEDULE_ENDPOINT;
-pub use stops::ENDPOINT as STOP_ENDPOINT;
-
-pub fn parse_list<R: Read, T>(input: R) -> anyhow::Result<Vec<T>>
-where
-    T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
-{
-    #[derive(Debug, Deserialize)]
-    struct Input {
-        #[serde(rename = "range")]
-        #[serde(skip)]
-        _range: String,
-        #[serde(rename = "majorDimension")]
-        #[serde(skip)]
-        _major_dimension: String,
-        values: Vec<Value>,
-    }
-
-    serde_json::from_reader::<_, Input>(input)?
-        .values
-        .iter()
-        .skip(1) // Skip "header" row
-        .map(TryInto::try_into)
-        .collect::<Result<_, _>>()
-}
-
-pub fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>
-where
-    T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
-{
-    parse_list(ureq::get(endpoint).call()?.into_reader())
-}
+pub const BUS_ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/Bus!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
+pub const SCHEDULE_ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusOperate!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
+pub const STOP_ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusStop!A1:100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
 
 #[cfg(test)]
 #[macro_export]
@@ -101,3 +71,33 @@ pub const TEST_SCHEDULE: &[u8] = test_data!("schedule");
 
 #[cfg(test)]
 pub const TEST_STOPS: &[u8] = test_data!("stops");
+
+pub fn parse_list<R: Read, T>(input: R) -> anyhow::Result<Vec<T>>
+where
+    T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
+{
+    #[derive(Debug, Deserialize)]
+    struct Input {
+        #[serde(rename = "range")]
+        #[serde(skip)]
+        _range: String,
+        #[serde(rename = "majorDimension")]
+        #[serde(skip)]
+        _major_dimension: String,
+        values: Vec<Value>,
+    }
+
+    serde_json::from_reader::<_, Input>(input)?
+        .values
+        .iter()
+        .skip(1) // Skip "header" row
+        .map(TryInto::try_into)
+        .collect::<Result<_, _>>()
+}
+
+pub fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>
+where
+    T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
+{
+    parse_list(ureq::get(endpoint).call()?.into_reader())
+}

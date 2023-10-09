@@ -7,7 +7,6 @@ use services::{BusService, RideService, RouteService};
 use tokio::signal;
 
 mod domain;
-mod lookup;
 mod services;
 
 #[tokio::main]

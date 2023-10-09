@@ -8,8 +8,6 @@ use serde_json::Value;
 
 use super::{Coordinates, Terminal};
 
-pub const ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusStop!A1:100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
-
 #[derive(Debug, Clone)]
 pub struct Stop {
     pub order: usize,
@@ -128,10 +126,13 @@ impl TryFrom<&Value> for Stop {
 
 #[cfg(test)]
 mod tests {
-    use crate::{domain::TEST_STOPS, test_fetch, test_parse};
+    use crate::{
+        domain::{STOP_ENDPOINT, TEST_STOPS},
+        test_fetch, test_parse,
+    };
 
     use super::*;
 
     test_parse!(Stop, TEST_STOPS, 52);
-    test_fetch!(Stop, ENDPOINT, 52);
+    test_fetch!(Stop, STOP_ENDPOINT, 52);
 }
