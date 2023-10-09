@@ -28,14 +28,13 @@ impl BusService {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::parse_list;
+    use crate::domain::{parse_list, TEST_BUSES};
 
     use super::*;
 
     #[test]
     fn operate_position() {
-        let input = include_bytes!("../domain/buses.json");
-        let buses = parse_list(&input[..]).unwrap();
+        let buses = parse_list(TEST_BUSES).unwrap();
         let sut = BusService::new(buses);
 
         assert_eq!(sut.operate_position("10-1152"), Some("Bus4"));

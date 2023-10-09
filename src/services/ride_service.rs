@@ -40,12 +40,11 @@ impl RideService {
 mod tests {
     use super::*;
 
-    use crate::domain::{parse_list, Schedule};
+    use crate::domain::{parse_list, Schedule, TEST_SCHEDULE};
 
     #[test]
     fn rides() {
-        let schedule =
-            parse_list::<_, Schedule>(&include_bytes!("../domain/schedule.json")[..]).unwrap();
+        let schedule = parse_list::<_, Schedule>(TEST_SCHEDULE).unwrap();
 
         let sut = RideService::new(schedule);
 

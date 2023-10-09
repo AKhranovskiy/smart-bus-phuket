@@ -128,12 +128,10 @@ impl TryFrom<&Value> for Stop {
 
 #[cfg(test)]
 mod tests {
-    use crate::{test_fetch, test_parse};
+    use crate::{domain::TEST_STOPS, test_fetch, test_parse};
 
     use super::*;
 
-    const INPUT: &[u8] = include_bytes!("stops.json");
-
-    test_parse!(Stop, INPUT, 52);
+    test_parse!(Stop, TEST_STOPS, 52);
     test_fetch!(Stop, ENDPOINT, 52);
 }

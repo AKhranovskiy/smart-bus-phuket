@@ -103,12 +103,10 @@ impl AsRef<NaiveTime> for SmartBusTime {
 
 #[cfg(test)]
 mod tests {
-    use crate::{test_fetch, test_parse};
+    use crate::{domain::TEST_SCHEDULE, test_fetch, test_parse};
 
     use super::*;
 
-    const INPUT: &[u8] = include_bytes!("schedule.json");
-
-    test_parse!(Schedule, INPUT, 34);
+    test_parse!(Schedule, TEST_SCHEDULE, 34);
     test_fetch!(Schedule, ENDPOINT, 34);
 }

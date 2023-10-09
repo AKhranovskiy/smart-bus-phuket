@@ -48,12 +48,24 @@ where
         .collect::<Result<_, _>>()
 }
 
-#[allow(dead_code)]
 pub fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>
 where
     T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
 {
     parse_list(ureq::get(endpoint).call()?.into_reader())
+}
+
+#[cfg(test)]
+#[macro_export]
+macro_rules! test_data {
+    ($input:literal) => {
+        include_bytes!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/data/",
+            $input,
+            ".json"
+        ))
+    };
 }
 
 #[cfg(test)]
@@ -80,3 +92,12 @@ macro_rules! test_fetch {
         }
     };
 }
+
+#[cfg(test)]
+pub const TEST_BUSES: &[u8] = test_data!("buses");
+
+#[cfg(test)]
+pub const TEST_SCHEDULE: &[u8] = test_data!("schedule");
+
+#[cfg(test)]
+pub const TEST_STOPS: &[u8] = test_data!("stops");

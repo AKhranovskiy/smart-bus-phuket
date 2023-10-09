@@ -84,12 +84,10 @@ impl TryFrom<&Value> for Bus {
 
 #[cfg(test)]
 mod tests {
-    use crate::{test_fetch, test_parse};
+    use crate::{domain::TEST_BUSES, test_fetch, test_parse};
 
     use super::*;
 
-    const INPUT: &[u8] = include_bytes!("buses.json");
-
-    test_parse!(Bus, INPUT, 11);
+    test_parse!(Bus, TEST_BUSES, 11);
     test_fetch!(Bus, ENDPOINT, 11);
 }

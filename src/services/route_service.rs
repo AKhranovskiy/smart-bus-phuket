@@ -72,12 +72,12 @@ impl RouteService {
 mod tests {
     use super::*;
 
-    use crate::domain::{parse_list, Stop};
+    use crate::domain::{parse_list, Stop, TEST_STOPS};
     use itertools::Itertools;
 
     #[test]
     fn routes() {
-        let stops = parse_list::<_, Stop>(&include_bytes!("../domain/stops.json")[..]).unwrap();
+        let stops = parse_list::<_, Stop>(TEST_STOPS).unwrap();
 
         let sut = RouteService::new(stops);
 
@@ -91,9 +91,7 @@ mod tests {
 
     #[test]
     fn locate() {
-        let sut = RouteService::new(
-            parse_list::<_, Stop>(&include_bytes!("../domain/stops.json")[..]).unwrap(),
-        );
+        let sut = RouteService::new(parse_list::<_, Stop>(TEST_STOPS).unwrap());
 
         let thawi_wong = Coordinates::new(98.296_32.into(), 7.896_155.into());
         let Some((before, after)) = sut.locate(RouteDirection::North, thawi_wong) else {
