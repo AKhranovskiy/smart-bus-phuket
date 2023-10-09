@@ -2,15 +2,15 @@ use std::{collections::HashMap, iter::once};
 
 use itertools::Itertools;
 
-use super::{route_direction::RouteDirection, terminal::Terminal, Coordinates, Stop};
+use crate::domain::{Coordinates, RouteDirection, Stop, Terminal};
 
-pub struct Routes {
-    routes: HashMap<super::route_direction::RouteDirection, Vec<Stop>>,
+pub type StopProximity<'a> = (&'a Stop, f64);
+
+pub struct RouteService {
+    routes: HashMap<RouteDirection, Vec<Stop>>,
 }
 
-type StopProximity<'a> = (&'a Stop, f64);
-
-impl Routes {
+impl RouteService {
     pub fn new(stops: Vec<Stop>) -> Self {
         let terminals = [
             Terminal::Airport,
@@ -72,14 +72,14 @@ impl Routes {
 mod tests {
     use super::*;
 
-    use crate::domain::{parse_list, schedule::Schedule, Stop};
+    use crate::domain::{parse_list, Stop};
     use itertools::Itertools;
 
     #[test]
     fn routes() {
-        let stops = parse_list::<_, Stop>(&include_bytes!("stops.json")[..]).unwrap();
+        let stops = parse_list::<_, Stop>(&include_bytes!("../domain/stops.json")[..]).unwrap();
 
-        let sut = Routes::new(stops);
+        let sut = RouteService::new(stops);
 
         for (direction, stops) in sut.routes {
             println!(
@@ -91,7 +91,9 @@ mod tests {
 
     #[test]
     fn locate() {
-        let sut = Routes::new(parse_list::<_, Stop>(&include_bytes!("stops.json")[..]).unwrap());
+        let sut = RouteService::new(
+            parse_list::<_, Stop>(&include_bytes!("../domain/stops.json")[..]).unwrap(),
+        );
 
         let thawi_wong = Coordinates::new(98.296_32.into(), 7.896_155.into());
         let Some((before, after)) = sut.locate(RouteDirection::North, thawi_wong) else {

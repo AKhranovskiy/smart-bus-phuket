@@ -2,6 +2,7 @@ use std::borrow::Cow;
 
 use chrono::NaiveDateTime;
 use serde::{de, Deserialize, Deserializer};
+use serde_json::Value;
 
 use crate::domain::coordinates::Heading;
 
@@ -17,10 +18,11 @@ pub struct Location {
     #[serde(rename = "state")]
     pub state: u32,
     #[serde(rename = "speed")]
-    speed: u32,
+    pub speed: u32,
     #[serde(rename = "direction")]
-    heading: Heading,
+    pub heading: Heading,
     #[serde(rename = "altitude")]
+    #[serde(deserialize_with = "deserialize_altitude")]
     pub altitude: u32,
     #[serde(rename = "dateTime")]
     #[serde(deserialize_with = "deserialize_naive_dt")]
@@ -42,6 +44,23 @@ where
         "%Y-%m-%d %H:%M:%S",
     )
     .map_err(de::Error::custom)
+}
+
+fn deserialize_altitude<'de, D>(deserializer: D) -> Result<u32, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let v = Value::deserialize(deserializer)?;
+    v.as_u64()
+        .or_else(|| {
+            if v.as_str() == Some("-") {
+                Some(0)
+            } else {
+                None
+            }
+        })
+        .ok_or_else(|| de::Error::custom("invalid altitude"))
+        .and_then(|v| u32::try_from(v).map_err(de::Error::custom))
 }
 
 #[cfg(test)]

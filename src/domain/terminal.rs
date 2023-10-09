@@ -2,6 +2,8 @@ use std::{fmt::Display, str::FromStr};
 
 use anyhow::bail;
 use serde::Deserialize;
+
+use super::Stop;
 #[derive(Debug, Copy, Clone, Deserialize, PartialEq, Eq, Hash)]
 pub enum Terminal {
     Airport,
@@ -32,5 +34,24 @@ impl Display for Terminal {
             Self::Kata => f.write_str("Kata"),
             Self::Patong => f.write_str("Patong"),
         }
+    }
+}
+
+impl Terminal {
+    pub const fn stop_name(self) -> &'static str {
+        match self {
+            Self::Airport => "Phuket Airport",
+            Self::Rawai => "Rawai Beach",
+            Self::Kata => "Kata Palm",
+            Self::Patong => "Bangla Patong",
+        }
+    }
+
+    pub fn stop(self, stops: &[Stop]) -> Stop {
+        stops
+            .iter()
+            .find(|s| s.name == self.stop_name())
+            .unwrap()
+            .clone()
     }
 }

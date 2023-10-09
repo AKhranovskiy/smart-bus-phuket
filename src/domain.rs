@@ -6,16 +6,25 @@ use serde_json::Value;
 mod buses;
 mod coordinates;
 mod location;
+mod ride;
+mod route_direction;
 mod routes;
 mod schedule;
 mod stops;
 mod terminal;
 
+pub use buses::Bus;
 pub use coordinates::Coordinates;
 pub use location::Location;
+pub use ride::Ride;
+pub use route_direction::RouteDirection;
+pub use schedule::Schedule;
 pub use stops::Stop;
+pub use terminal::Terminal;
 
-use terminal::Terminal;
+pub use buses::ENDPOINT as BUS_ENDPOINT;
+pub use schedule::ENDPOINT as SCHEDULE_ENDPOINT;
+pub use stops::ENDPOINT as STOP_ENDPOINT;
 
 pub fn parse_list<R: Read, T>(input: R) -> anyhow::Result<Vec<T>>
 where
