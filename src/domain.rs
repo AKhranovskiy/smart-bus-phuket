@@ -8,7 +8,6 @@ mod coordinates;
 mod location;
 mod ride;
 mod route_direction;
-mod routes;
 mod schedule;
 mod stops;
 mod terminal;
