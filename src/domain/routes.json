@@ -1,0 +1,356 @@
+{
+  "range": "BusOperate!A1:Q100",
+  "majorDimension": "ROWS",
+  "values": [
+    [
+      "bus operate position",
+      "Start",
+      "departue time",
+      "color changed",
+      "arroval ti,e",
+      "destination",
+      "Direction",
+      "icon"
+    ],
+    [
+      "Bus1",
+      "Kata",
+      "6:15:00 AM",
+      "6:00:00 AM",
+      "8:55:00 AM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus1",
+      "Airport",
+      "10:00:00 AM",
+      "9:30:00 AM",
+      "11:50:00 AM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus1",
+      "Rawai",
+      "13:00:00 PM",
+      "12:30:00 PM",
+      "15:02:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus1",
+      "Airport",
+      "17:00:00 PM",
+      "16:30:00 PM",
+      "18:49:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus1",
+      "Rawai",
+      "20:00:00 PM",
+      "19:30:00 PM",
+      "20:49:00 PM",
+      "Patong",
+      "to Patong",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus2",
+      "Kata",
+      "7:15:00 AM",
+      "7:00:00 AM",
+      "9:02:00 AM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus2",
+      "Airport",
+      "11:00:00 AM",
+      "10:30:00 AM",
+      "12:49:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus2",
+      "Rawai",
+      "14:00:00 PM",
+      "13:30:00 PM",
+      "16:00:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus2",
+      "Airport",
+      "18:00:00 PM",
+      "17:30:00 PM",
+      "19:46:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus3",
+      "Rawai",
+      "8:00:00 AM",
+      "7:50:00 AM",
+      "9:49:00 AM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus3",
+      "Airport",
+      "12:00:00 PM",
+      "11:30:00 AM",
+      "14:00:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus3",
+      "Rawai",
+      "15:00:00 PM",
+      "14:30:00 PM",
+      "16:49:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus3",
+      "Airport",
+      "19:00:00 PM",
+      "18:30:00 PM",
+      "20:49:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus4",
+      "Rawai",
+      "9:00:00 AM",
+      "8:30:00 AM",
+      "10:49:00 AM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus4",
+      "Airport",
+      "13:00:00 PM",
+      "12:30:00 PM",
+      "15:00:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus4",
+      "Rawai",
+      "16:00:00 PM",
+      "15:30:00 PM",
+      "17:49:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus4",
+      "Airport",
+      "20:00:00 PM",
+      "19:30:00 PM",
+      "21:49:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus5",
+      "Airport",
+      "9:00:00 AM",
+      "8:30:00 AM",
+      "10:49:00 AM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus5",
+      "Rawai",
+      "12:00:00 PM",
+      "11:30:00 AM",
+      "14:00:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus5",
+      "Airport",
+      "16:00:00 PM",
+      "15:30:00 PM",
+      "17:49:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus5",
+      "Rawai",
+      "19:00:00 PM",
+      "18:30:00 PM",
+      "21:00:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus6",
+      "Patong",
+      "9:00:00 AM",
+      "8:30:00 AM",
+      "10:00:00 AM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus6",
+      "Rawai",
+      "10:00:00 AM",
+      "10:00:00 AM",
+      "11:59:00 AM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus6",
+      "Airport",
+      "14:00:00 PM",
+      "13:30:00 PM",
+      "16:02:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus6",
+      "Rawai",
+      "17:00:00 PM",
+      "16:30:00 PM",
+      "18:59:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus6",
+      "Airport",
+      "21:00:00 PM",
+      "20:30:00 PM",
+      "22:30:00 PM",
+      "Patong",
+      "to Patong",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus7",
+      "Rawai",
+      "11:00:00 AM",
+      "10:30:00 AM",
+      "12:59:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus7",
+      "Airport",
+      "15:00:00 PM",
+      "14:30:00 PM",
+      "17:00:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus7",
+      "Rawai",
+      "18:00:00 PM",
+      "17:30:00 PM",
+      "19:59:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus7",
+      "Airport",
+      "22:00:00 PM",
+      "21:30:00 PM",
+      "23:49:00 PM",
+      "Patong",
+      "to Patong",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus8",
+      "Rawai",
+      "11:30:00 AM",
+      "11:00:00 AM",
+      "13:30:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus8",
+      "Airport",
+      "15:30:00 PM",
+      "15:00:00 PM",
+      "17:30:00 PM",
+      "Rawai",
+      "to Rawai",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-1.png"
+    ],
+    [
+      "Bus8",
+      "Rawai",
+      "18:30:00 PM",
+      "18:00:00 PM",
+      "20:30:00 PM",
+      "Airport",
+      "to Airport",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ],
+    [
+      "Bus8",
+      "Airport",
+      "22:30:00 PM",
+      "22:00:00 PM",
+      "12:00:00 AM",
+      "Kata",
+      "to Kata",
+      "https://phuketsmartbus.com/wp-content/uploads/2022/08/icon-bus-2.png"
+    ]
+  ]
+}
