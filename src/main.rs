@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use domain::fetch;
+use domain::{fetch_buses, fetch_shedule, fetch_stops};
 use futures_util::FutureExt;
 use rust_socketio::{asynchronous::ClientBuilder, Event, Payload};
 use services::{BusService, RideService, RouteService};
@@ -13,9 +13,9 @@ mod services;
 async fn main() -> anyhow::Result<()> {
     let source = "https://smartbus-7lpin5zc7a-as.a.run.app";
 
-    let bus_service = Arc::new(BusService::new(fetch(domain::BUS_ENDPOINT)?));
-    let ride_service = Arc::new(RideService::new(fetch(domain::SCHEDULE_ENDPOINT)?));
-    let route_service = Arc::new(RouteService::new(fetch(domain::STOP_ENDPOINT)?));
+    let bus_service = Arc::new(BusService::new(fetch_buses()?));
+    let ride_service = Arc::new(RideService::new(fetch_shedule()?));
+    let route_service = Arc::new(RouteService::new(fetch_stops()?));
 
     ClientBuilder::new(source)
         .namespace("/")
