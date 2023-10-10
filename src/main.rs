@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
 
     let bus_service = Arc::new(BusService::new(fetch_buses()?));
     let ride_service = Arc::new(RideService::new(fetch_shedule()?));
-    let route_service = Arc::new(RouteService::new(fetch_stops()?));
+    let route_service = Arc::new(RouteService::new(&fetch_stops()?));
 
     ClientBuilder::new(source)
         .namespace("/")
@@ -62,7 +62,10 @@ async fn main() -> anyhow::Result<()> {
                                 if let Some((prev, next)) = route_service.locate(ride.direction(), location.coordinates) {
                                 println!(
                                     "{}\t{}\t{} => {}, {}m from {} => {}m to {}, speed={}kmh, heading={}°, altitude={}m",
-                                    location.date_time, ride.name, ride.start, ride.stop, prev.1, prev.0.name, next.1, next.0.name,
+                                    location.date_time,
+                                    ride.name, ride.start, ride.stop,
+                                    prev.coordinates.distance_to(location.coordinates), prev.name,
+                                    next.coordinates.distance_to(location.coordinates), next.name,
                                     location.speed, location.heading.0, location.altitude
                                 );
                                 } else {
