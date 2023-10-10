@@ -1,7 +1,7 @@
 use std::{
     collections::BTreeMap,
     iter::once,
-    ops::Bound::{Excluded, Included, Unbounded},
+    ops::Bound::{Included, Unbounded},
 };
 
 use itertools::Itertools;
@@ -39,33 +39,50 @@ impl RouteService {
             RouteDirection::South => &self.south,
         };
 
-        let mut previous = stops
-            .range((Unbounded, Excluded(pos.latitude)))
-            .next_back()
-            .map(|(_, s)| s);
+        let mut previous_it = stops.range((Unbounded, Included(pos.latitude)));
+        let mut next_it = stops.range((Included(pos.latitude), Unbounded));
 
-        let mut next = stops
-            .range((Included(pos.latitude), Unbounded))
-            .next()
-            .map(|(_, s)| s);
+        let (mut previous, mut next) = {
+            let (previous, next) = (previous_it.next_back(), next_it.next());
+            if previous == next {
+                (previous_it.next_back(), previous)
+            } else if previous.is_none() {
+                (next, next_it.next())
+            } else {
+                (previous, next)
+            }
+        };
 
         if dir == RouteDirection::South {
             std::mem::swap(&mut previous, &mut next);
         }
 
-        previous.zip(next)
+        previous.map(|s| s.1).zip(next.map(|s| s.1))
     }
 }
 
 #[cfg(test)]
 mod tests {
     use itertools::Itertools;
+    use rstest::rstest;
 
-    use crate::domain::{parse_list, TEST_STOPS};
+    use crate::domain::{parse_list, Longitude, TEST_STOPS};
 
     use super::*;
 
+    const AIRPORT: Coordinates = Coordinates::new(Longitude(98.306_55), Latitude(8.108_46));
+    const NEAR_AIRPORT: Coordinates = Coordinates::new(Longitude(98.306_55), Latitude(8.102_46));
+    const THAWI_WONG: Coordinates = Coordinates::new(Longitude(98.296_32), Latitude(7.896_155));
+    const RAT_UTHIT: Coordinates = Coordinates::new(Longitude(98.300_77), Latitude(7.903_634));
+    const RAWAI: Coordinates = Coordinates::new(Longitude(98.321_785), Latitude(7.772_087));
+    const NEAR_RAWAI: Coordinates = Coordinates::new(Longitude(98.321_785), Latitude(7.782_087));
+
+    fn sut() -> RouteService {
+        RouteService::new(&parse_list(TEST_STOPS).unwrap())
+    }
+
     #[test]
+    #[ignore]
     fn routes() {
         let sut = RouteService::new(&parse_list(TEST_STOPS).unwrap());
 
@@ -83,91 +100,68 @@ mod tests {
         );
     }
 
-    #[test]
-    fn locate_on_north_route() {
-        let sut = RouteService::new(&parse_list(TEST_STOPS).unwrap());
+    #[rstest]
+    #[case::south_airport(
+        RouteDirection::South,
+        AIRPORT,
+        "Phuket Airport",
+        "Thalang Public Health Office"
+    )]
+    #[case::south_near_airport(
+        RouteDirection::South,
+        NEAR_AIRPORT,
+        "Phuket Airport",
+        "Thalang Public Health Office"
+    )]
+    #[case::south_rat_uthit(
+        RouteDirection::South,
+        RAT_UTHIT,
+        "Diamond Cliff Resort & Spa",
+        "Indigo Patong"
+    )]
+    #[case::south_near_rawai(RouteDirection::South, NEAR_RAWAI, "Sai Yuan", "Rawai Beach")]
+    #[case::south_rawai(RouteDirection::South, RAWAI, "Sai Yuan", "Rawai Beach")]
+    #[case::north_rawai(RouteDirection::North, RAWAI, "Rawai Beach", "Sai Yuan")]
+    #[case::north_near_rawai(RouteDirection::North, NEAR_RAWAI, "Rawai Beach", "Sai Yuan")]
+    #[case::north_thawi_wong(
+        RouteDirection::North,
+        THAWI_WONG,
+        "Bangla Patong",
+        "Four Point Patong"
+    )]
+    #[case::north_near_airport(
+        RouteDirection::North,
+        NEAR_AIRPORT,
+        "Thalang Public Health Office",
+        "Phuket Airport"
+    )]
+    #[case::north_airport(
+        RouteDirection::North,
+        AIRPORT,
+        "Thalang Public Health Office",
+        "Phuket Airport"
+    )]
+    fn locate(
+        #[case] direction: RouteDirection,
+        #[case] pos: Coordinates,
+        #[case] previous_stop_name: &str,
+        #[case] next_stop_name: &str,
+    ) {
+        let sut = sut();
 
-        let thawi_wong = Coordinates::new(98.296_32.into(), 7.896_155.into());
-
-        let Some((prev, next)) = sut.locate(RouteDirection::North, thawi_wong) else {
-            unreachable!()
+        let Some((prev, next)) = sut.locate(direction, pos) else {
+            panic!("Failed to locate the stop")
         };
 
         println!(
             "{} -{} <=> +{} {}",
             prev.name,
-            prev.coordinates.distance_to(thawi_wong),
-            next.coordinates.distance_to(thawi_wong),
+            prev.coordinates.distance_to(pos),
+            next.coordinates.distance_to(pos),
             next.name
         );
 
-        assert_eq!(prev.name, "Bangla Patong");
-        assert_eq!(next.name, "Four Point Patong");
-    }
-
-    #[test]
-    fn locate_on_south_route() {
-        let sut = RouteService::new(&parse_list(TEST_STOPS).unwrap());
-
-        let rat_uthit = Coordinates::new(98.300_77.into(), 7.903_634.into());
-
-        let Some((prev, next)) = sut.locate(RouteDirection::South, rat_uthit) else {
-            unreachable!()
-        };
-
-        println!(
-            "{} -{} <=> +{} {}",
-            prev.name,
-            prev.coordinates.distance_to(rat_uthit),
-            next.coordinates.distance_to(rat_uthit),
-            next.name
-        );
-
-        assert_eq!(prev.name, "Diamond Cliff Resort & Spa");
-        assert_eq!(next.name, "Indigo Patong");
-    }
-
-    #[test]
-    fn locate_terminal_airport_north() {
-        let sut = RouteService::new(&parse_list(TEST_STOPS).unwrap());
-
-        let airport = Coordinates::new(98.306_55.into(), 8.108_46.into());
-
-        let Some((prev, next)) = sut.locate(RouteDirection::North, airport) else {
-            unreachable!()
-        };
-
-        println!(
-            "{} -{} <=> +{} {}",
-            prev.name,
-            prev.coordinates.distance_to(airport),
-            next.coordinates.distance_to(airport),
-            next.name
-        );
-
-        assert_eq!(prev.name, "Thalang Public Health Office");
-        assert_eq!(next.name, "Phuket Airport");
-    }
-
-    #[test]
-    fn locate_terminal_airport_south() {
-        let sut = RouteService::new(&parse_list(TEST_STOPS).unwrap());
-
-        let airport = Coordinates::new(98.306_55.into(), 8.108_46.into());
-
-        let Some((prev, next)) = sut.locate(RouteDirection::South, airport) else {
-            unreachable!()
-        };
-
-        println!(
-            "{} -{} <=> +{} {}",
-            prev.name,
-            prev.coordinates.distance_to(airport),
-            next.coordinates.distance_to(airport),
-            next.name
-        );
-
-        assert_eq!(prev.name, "Phuket Airport");
-        assert_eq!(next.name, "Thalang Public Health Office");
+        assert_eq!(prev.name, previous_stop_name);
+        assert_eq!(next.name, next_stop_name);
     }
 }

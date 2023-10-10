@@ -8,7 +8,7 @@ use serde_json::Value;
 
 use super::{Coordinates, Terminal};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Stop {
     pub order: usize,
     pub name_th: String,
