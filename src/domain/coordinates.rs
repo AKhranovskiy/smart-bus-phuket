@@ -47,6 +47,19 @@ macro_rules! impl_eq {
                 &self.0
             }
         }
+
+        impl Ord for $name {
+            fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                self.partial_cmp(&other).unwrap()
+            }
+        }
+
+        #[allow(clippy::non_canonical_partial_ord_impl)]
+        impl PartialOrd for $name {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                self.0.partial_cmp(&other.0)
+            }
+        }
     };
 }
 

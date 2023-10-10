@@ -1,37 +1,41 @@
-use std::{collections::HashMap, iter::once};
+use std::{
+    collections::{BTreeMap, HashMap},
+    iter::once,
+    ops::Bound::{Excluded, Unbounded},
+};
 
 use itertools::Itertools;
 
-use crate::domain::{Coordinates, RouteDirection, Stop, Terminal};
+use crate::domain::{Coordinates, Latitude, RouteDirection, Stop, Terminal};
 
 pub type StopProximity<'a> = (&'a Stop, f64);
 
 pub struct RouteService {
-    routes: HashMap<RouteDirection, Vec<Stop>>,
+    routes: HashMap<RouteDirection, BTreeMap<Latitude, Stop>>,
 }
 
 impl RouteService {
     pub fn new(stops: Vec<Stop>) -> Self {
         let terminals = [
-            Terminal::Airport,
-            Terminal::Rawai,
-            Terminal::Kata,
-            Terminal::Patong,
+            (Terminal::Airport, Terminal::Airport.stop(&stops)),
+            (Terminal::Rawai, Terminal::Rawai.stop(&stops)),
         ]
         .into_iter()
-        .map(|t| (t, t.stop(&stops)))
         .collect::<HashMap<_, _>>();
 
         let routes = stops
             .into_iter()
             .into_group_map_by(|s| s.route_direction)
             .into_iter()
+            .filter(|(terminal, _)| terminal == &Terminal::Airport || terminal == &Terminal::Rawai)
             .map(|(terminal, directed_stops)| {
+                let terminal_stop = terminals.get(&terminal).cloned().unwrap();
                 let stops = directed_stops
                     .into_iter()
                     .sorted_by_key(|s| s.order)
-                    .chain(once(terminals.get(&terminal).cloned().unwrap()))
-                    .collect::<Vec<_>>();
+                    .chain(once(terminal_stop))
+                    .map(|s| (s.coordinates.latitude, s))
+                    .collect();
 
                 (terminal.into(), stops)
             })
@@ -47,23 +51,20 @@ impl RouteService {
         pos: Coordinates,
     ) -> Option<(StopProximity, StopProximity)> {
         if let Some(stops) = self.routes.get(&dir) {
-            let sign = |point: Coordinates| match dir {
-                RouteDirection::North => f64::from(point.latitude.0 - pos.latitude.0).signum(),
-                RouteDirection::South => f64::from(pos.latitude.0 - point.latitude.0).signum(),
-            };
+            let before = stops.range((Unbounded, Excluded(pos.latitude))).next_back();
+            let after = stops.range((Excluded(pos.latitude), Unbounded)).next();
 
-            let pair = stops.windows(2).find(|s| {
-                let before = &s[0];
-                let after = &s[1];
-                sign(before.coordinates) + sign(after.coordinates) == 0.0
-            });
+            if let (Some(before), Some(after)) = (before, after) {
+                let dist_before = pos.distance_to(before.1.coordinates);
+                let dist_after = pos.distance_to(after.1.coordinates);
 
-            if let Some([before, after, ..]) = pair {
-                let dist_from = pos.distance_to(before.coordinates);
-                let dist_to = pos.distance_to(after.coordinates);
-                return Some(((before, dist_from), (after, dist_to)));
+                return match dir {
+                    RouteDirection::South => Some(((after.1, dist_after), (before.1, dist_before))),
+                    RouteDirection::North => Some(((before.1, dist_before), (after.1, dist_after))),
+                };
             }
         }
+
         None
     }
 }
@@ -84,31 +85,46 @@ mod tests {
         for (direction, stops) in sut.routes {
             println!(
                 "{direction}: {}",
-                stops.iter().map(|s| s.name.as_str()).join(" > ")
+                stops.values().map(|s| s.name.as_str()).join(" > ")
             );
         }
     }
 
     #[test]
-    fn locate() {
+    fn locate_on_north_route() {
         let sut = RouteService::new(parse_list::<_, Stop>(TEST_STOPS).unwrap());
 
         let thawi_wong = Coordinates::new(98.296_32.into(), 7.896_155.into());
+
         let Some((before, after)) = sut.locate(RouteDirection::North, thawi_wong) else {
             unreachable!()
         };
+
         println!(
             "{} -{} <=> +{} {}",
             before.0.name, before.1, after.1, after.0.name
         );
 
+        assert_eq!(before.0.name, "Bangla Patong");
+        assert_eq!(after.0.name, "Four Point Patong");
+    }
+
+    #[test]
+    fn locate_on_south_route() {
+        let sut = RouteService::new(parse_list::<_, Stop>(TEST_STOPS).unwrap());
+
         let rat_uthit = Coordinates::new(98.300_77.into(), 7.903_634.into());
+
         let Some((before, after)) = sut.locate(RouteDirection::South, rat_uthit) else {
             unreachable!()
         };
+
         println!(
             "{} -{} <=> +{} {}",
             before.0.name, before.1, after.1, after.0.name
         );
+
+        assert_eq!(before.0.name, "Diamond Cliff Resort & Spa");
+        assert_eq!(after.0.name, "Indigo Patong");
     }
 }

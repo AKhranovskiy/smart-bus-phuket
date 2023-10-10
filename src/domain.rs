@@ -13,7 +13,7 @@ mod stops;
 mod terminal;
 
 pub use buses::Bus;
-pub use coordinates::Coordinates;
+pub use coordinates::{Coordinates, Latitude};
 pub use location::Location;
 pub use ride::Ride;
 pub use route_direction::RouteDirection;
