@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    env::args,
     sync::{Arc, Mutex},
 };
 
@@ -15,6 +16,10 @@ use services::{BusService, ConfigService, FetchService, RideService, RouteServic
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let config = ConfigService::new()?;
+
+    if args().nth(1).as_deref() == Some("fetch") {
+        return fetch_test_data(&config);
+    }
 
     let fetch_service = Arc::new(FetchService::new(config.clone())?);
     let bus_service = Arc::new(BusService::new(fetch_service.clone()));
@@ -104,6 +109,30 @@ async fn main() -> anyhow::Result<()> {
         .expect("Connection failed");
 
     signal::ctrl_c().await?;
+
+    Ok(())
+}
+
+fn fetch_test_data(config: &ConfigService) -> anyhow::Result<()> {
+    println!("Fetching test data");
+
+    std::io::copy(
+        &mut ureq::get(config.buses_url()).call()?.into_reader(),
+        &mut std::fs::File::create("data/buses.json")?,
+    )?;
+    println!("Buses OK");
+
+    std::io::copy(
+        &mut ureq::get(config.schedule_url()).call()?.into_reader(),
+        &mut std::fs::File::create("data/schedule.json")?,
+    )?;
+    println!("Schedule OK");
+
+    std::io::copy(
+        &mut ureq::get(config.stops_url()).call()?.into_reader(),
+        &mut std::fs::File::create("data/stops.json")?,
+    )?;
+    println!("Stops OK");
 
     Ok(())
 }
