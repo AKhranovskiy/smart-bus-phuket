@@ -13,6 +13,7 @@ mod stops;
 mod terminal;
 
 pub use buses::Bus;
+#[allow(unused_imports)]
 pub use coordinates::{Coordinates, Latitude, Longitude};
 pub use location::Location;
 pub use ride::Ride;
