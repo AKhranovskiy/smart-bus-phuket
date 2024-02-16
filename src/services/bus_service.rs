@@ -24,6 +24,10 @@ impl BusService {
             .get(car_license)
             .map(|b| b.operate_position.as_ref())
     }
+
+    pub fn number_of_buses(&self) -> usize {
+        self.buses.len()
+    }
 }
 
 #[cfg(test)]

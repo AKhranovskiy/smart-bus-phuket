@@ -1,13 +1,17 @@
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
-use domain::{fetch_buses, fetch_shedule, fetch_stops};
 use futures_util::FutureExt;
 use rust_socketio::{asynchronous::ClientBuilder, Event, Payload};
-use services::{BusService, RideService, RouteService};
 use tokio::signal;
 
 mod domain;
 mod services;
+
+use domain::{fetch_buses, fetch_shedule, fetch_stops};
+use services::{BusService, RideService, RouteService};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -17,12 +21,17 @@ async fn main() -> anyhow::Result<()> {
     let ride_service = Arc::new(RideService::new(fetch_shedule()?));
     let route_service = Arc::new(RouteService::new(&fetch_stops()?));
 
+    let bus_lru = Arc::new(Mutex::new(HashMap::with_capacity(
+        bus_service.number_of_buses(),
+    )));
+
     ClientBuilder::new(source)
         .namespace("/")
         .on_any(move |event, payload, _client| {
             let bus_service = bus_service.clone();
             let ride_service = ride_service.clone();
             let route_service = route_service.clone();
+            let bus_lru = bus_lru.clone();
             async move {
                 match event {
                     Event::Connect => println!("Connected"),
@@ -42,6 +51,13 @@ async fn main() -> anyhow::Result<()> {
                                         }
                                     };
 
+                                if let Some(last_date_time) = bus_lru.lock().unwrap().insert(location.car_license.clone(), location.date_time) {
+                                    if last_date_time == location.date_time {
+                                        // duplicating message, skip
+                                        return
+                                    }
+                                }
+
                                 let Some(bus) = bus_service.operate_position(&location.car_license)
                                 else {
                                     eprintln!(
@@ -50,6 +66,7 @@ async fn main() -> anyhow::Result<()> {
                                     );
                                     return;
                                 };
+
                                 let Some(ride) = ride_service.get(bus, location.date_time.time())
                                 else {
                                     eprintln!(
