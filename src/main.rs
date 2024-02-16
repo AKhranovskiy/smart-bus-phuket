@@ -10,22 +10,22 @@ use tokio::signal;
 mod domain;
 mod services;
 
-use domain::{fetch_buses, fetch_shedule, fetch_stops};
-use services::{BusService, RideService, RouteService};
+use services::{BusService, ConfigService, FetchService, RideService, RouteService};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let source = "https://smartbus-7lpin5zc7a-as.a.run.app";
+    let config = ConfigService::new()?;
 
-    let bus_service = Arc::new(BusService::new(fetch_buses()?));
-    let ride_service = Arc::new(RideService::new(fetch_shedule()?));
-    let route_service = Arc::new(RouteService::new(&fetch_stops()?));
+    let fetch_service = Arc::new(FetchService::new(config.clone())?);
+    let bus_service = Arc::new(BusService::new(fetch_service.clone()));
+    let ride_service = Arc::new(RideService::new(fetch_service.clone()));
+    let route_service = Arc::new(RouteService::new(fetch_service.clone()));
 
     let bus_lru = Arc::new(Mutex::new(HashMap::with_capacity(
         bus_service.number_of_buses(),
     )));
 
-    ClientBuilder::new(source)
+    ClientBuilder::new(config.app_socket())
         .namespace("/")
         .on_any(move |event, payload, _client| {
             let bus_service = bus_service.clone();

@@ -1,0 +1,6 @@
+app_socket = 'https://smartbus-7lpin5zc7a-as.a.run.app'
+api_key = 'AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_a'
+resource = '1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE'
+buses = 'Bus!A1:Q100'
+schedule = 'BusOperate!A1:Q100'
+stops = 'BusStop!A1:100'

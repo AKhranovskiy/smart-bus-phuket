@@ -1,21 +1,28 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::domain::Bus;
 
+use super::FetchService;
+
 type CarLicense = String;
 
-#[derive(Debug)]
 pub struct BusService {
+    #[allow(dead_code)]
+    fetch_service: Arc<FetchService>,
     buses: HashMap<CarLicense, Bus>,
 }
 
 impl BusService {
-    pub fn new(buses: Vec<Bus>) -> Self {
+    pub fn new(fetch_service: Arc<FetchService>) -> Self {
+        let buses = fetch_service
+            .buses()
+            .into_iter()
+            .map(|bus| (bus.licence_plate_no.clone(), bus))
+            .collect();
+
         Self {
-            buses: buses
-                .into_iter()
-                .map(|bus| (bus.licence_plate_no.clone(), bus))
-                .collect(),
+            fetch_service,
+            buses,
         }
     }
 
@@ -32,15 +39,11 @@ impl BusService {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{parse_list, TEST_BUSES};
-
     use super::*;
 
     #[test]
     fn operate_position() {
-        let buses = parse_list(TEST_BUSES).unwrap();
-        let sut = BusService::new(buses);
-
+        let sut = BusService::new(Arc::new(FetchService::for_tests()));
         assert_eq!(sut.operate_position("10-1152"), Some("Bus7"));
     }
 }

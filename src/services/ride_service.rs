@@ -1,17 +1,22 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use chrono::NaiveTime;
 use itertools::Itertools;
 use rangemap::RangeMap;
 
-use crate::domain::{Ride, Schedule};
+use crate::domain::Ride;
+
+use super::FetchService;
 
 pub struct RideService {
+    #[allow(dead_code)]
+    fetch_service: Arc<FetchService>,
     rides: HashMap<String, RangeMap<NaiveTime, crate::domain::Ride>>,
 }
 
 impl RideService {
-    pub fn new(schedule: Vec<Schedule>) -> Self {
+    pub fn new(fetch_service: Arc<FetchService>) -> Self {
+        let schedule = fetch_service.schedule();
         let mut rides = HashMap::new();
 
         for (position, schedules) in schedule
@@ -29,8 +34,12 @@ impl RideService {
             rides.insert(position, ranges);
         }
 
-        Self { rides }
+        Self {
+            fetch_service,
+            rides,
+        }
     }
+
     pub fn get(&self, pos: &str, time: NaiveTime) -> Option<&Ride> {
         self.rides.get(pos).and_then(|r| r.get(&time))
     }
@@ -40,13 +49,9 @@ impl RideService {
 mod tests {
     use super::*;
 
-    use crate::domain::{parse_list, Schedule, TEST_SCHEDULE};
-
     #[test]
     fn rides() {
-        let schedule = parse_list::<_, Schedule>(TEST_SCHEDULE).unwrap();
-
-        let sut = RideService::new(schedule);
+        let sut = RideService::new(Arc::new(FetchService::for_tests()));
 
         let bus6 = sut.get("Bus6", NaiveTime::from_hms_opt(14, 0, 0).unwrap());
         assert!(bus6.is_some());

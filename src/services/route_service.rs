@@ -2,31 +2,39 @@ use std::{
     collections::BTreeMap,
     iter::once,
     ops::Bound::{Included, Unbounded},
+    sync::Arc,
 };
 
 use itertools::Itertools;
 
 use crate::domain::{Coordinates, Latitude, RouteDirection, Stop, Terminal};
 
+use super::FetchService;
+
 pub struct RouteService {
+    #[allow(dead_code)]
+    fetch_service: Arc<FetchService>,
     north: BTreeMap<Latitude, Stop>,
     south: BTreeMap<Latitude, Stop>,
 }
 
 impl RouteService {
-    pub fn new(stops: &[Stop]) -> Self {
+    pub fn new(fetch_service: Arc<FetchService>) -> Self {
+        let stops = fetch_service.stops();
+
         let build = |terminal: Terminal| {
             stops
                 .iter()
                 .filter(|s| s.route_direction == terminal)
                 .cloned()
                 .sorted_by_key(|s| s.order)
-                .chain(once(terminal.stop(stops)))
+                .chain(once(terminal.stop(&stops)))
                 .map(|s| (s.coordinates.latitude, s))
                 .collect()
         };
 
         Self {
+            fetch_service,
             north: build(Terminal::Airport),
             south: build(Terminal::Rawai),
         }
@@ -66,7 +74,7 @@ mod tests {
     use itertools::Itertools;
     use rstest::rstest;
 
-    use crate::domain::{parse_list, Longitude, TEST_STOPS};
+    use crate::domain::Longitude;
 
     use super::*;
 
@@ -78,13 +86,13 @@ mod tests {
     const NEAR_RAWAI: Coordinates = Coordinates::new(Longitude(98.321_785), Latitude(7.782_087));
 
     fn sut() -> RouteService {
-        RouteService::new(&parse_list(TEST_STOPS).unwrap())
+        RouteService::new(Arc::new(FetchService::for_tests()))
     }
 
     #[test]
     #[ignore]
-    fn routes() {
-        let sut = RouteService::new(&parse_list(TEST_STOPS).unwrap());
+    fn print_routes() {
+        let sut = sut();
 
         println!(
             "NORTH: {}",
