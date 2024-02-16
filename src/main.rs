@@ -25,7 +25,7 @@ async fn main() -> anyhow::Result<()> {
         return fetch_test_data(&config);
     }
 
-    let fetch_service = Arc::new(FetchService::new(config.clone())?);
+    let fetch_service = Arc::new(FetchService::new(config.clone()));
     let bus_service = Arc::new(BusService::new(fetch_service.clone()));
     let ride_service = Arc::new(RideService::new(fetch_service.clone()));
     let route_service = Arc::new(RouteService::new(fetch_service.clone()));
@@ -104,7 +104,7 @@ fn process_location_update(
         return;
     };
 
-    let Some(ride) = ride_service.get(bus, location.date_time.time()) else {
+    let Some(ride) = ride_service.get(&bus, location.date_time.time()) else {
         eprintln!(
             "WARN Non-operating bus, position={}, license={}",
             bus, location.car_license

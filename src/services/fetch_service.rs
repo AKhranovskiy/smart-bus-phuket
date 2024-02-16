@@ -1,4 +1,9 @@
-use chrono::NaiveDateTime;
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    RwLock, RwLockReadGuard,
+};
+
+use chrono::{NaiveDateTime, Utc};
 
 use crate::{
     config::Config,
@@ -6,48 +11,109 @@ use crate::{
 };
 
 pub struct FetchService {
+    config: Config,
+    inner: RwLock<Inner>,
+    version: AtomicU64,
+}
+
+#[derive(Debug, Default, Clone)]
+struct Inner {
     buses: Vec<Bus>,
     schedule: Vec<Schedule>,
     stops: Vec<Stop>,
-    #[allow(dead_code)]
-    config: Config,
-    #[allow(dead_code)]
-    last_update: NaiveDateTime,
+    last_updated: NaiveDateTime,
 }
 
-impl FetchService {
-    pub fn new(config: Config) -> anyhow::Result<Self> {
+impl Inner {
+    fn fetch(config: &Config) -> anyhow::Result<Self> {
         Ok(Self {
             buses: fetch(&config.buses_url)?,
             schedule: fetch(&config.schedule_url)?,
             stops: fetch(&config.stops_url)?,
-            config,
-            last_update: NaiveDateTime::default(),
+            last_updated: Utc::now().naive_local(),
         })
     }
 
     #[cfg(test)]
-    pub fn for_tests() -> Self {
-        use chrono::Utc;
-
+    fn for_tests() -> Self {
         use crate::domain::{parse_list, TEST_BUSES, TEST_SCHEDULE, TEST_STOPS};
-
         Self {
-            config: Config::default(),
             buses: parse_list(TEST_BUSES).unwrap(),
             schedule: parse_list(TEST_SCHEDULE).unwrap(),
             stops: parse_list(TEST_STOPS).unwrap(),
-            last_update: Utc::now().naive_local(),
+            last_updated: Utc::now().naive_local() + chrono::Duration::days(365),
+        }
+    }
+}
+
+impl FetchService {
+    pub fn new(config: Config) -> Self {
+        Self {
+            config,
+            inner: RwLock::default(),
+            version: AtomicU64::default(),
+        }
+    }
+
+    #[cfg(test)]
+    pub fn for_tests() -> Self {
+        Self {
+            config: Config::default(),
+            inner: RwLock::new(Inner::for_tests()),
+            version: AtomicU64::new(1),
         }
     }
 
     pub fn buses(&self) -> Vec<Bus> {
-        self.buses.clone()
+        self.inner().buses.clone()
     }
     pub fn schedule(&self) -> Vec<Schedule> {
-        self.schedule.clone()
+        self.inner().schedule.clone()
     }
     pub fn stops(&self) -> Vec<Stop> {
-        self.stops.clone()
+        self.inner().stops.clone()
+    }
+    pub fn version(&self) -> u64 {
+        self.version.load(Ordering::Acquire)
+    }
+
+    fn inner(&self) -> RwLockReadGuard<Inner> {
+        self.fetch_if_outdated();
+        self.inner.read().unwrap()
+    }
+
+    fn fetch_if_outdated(&self) {
+        if (Utc::now().naive_local() - self.inner.read().unwrap().last_updated)
+            < self.config.update_interval
+        {
+            return;
+        }
+
+        {
+            let mut inner_guard = self.inner.write().unwrap();
+            // Write lock check
+            if (Utc::now().naive_local() - inner_guard.last_updated) <= self.config.update_interval
+            {
+                return;
+            }
+            // Postpone other attempts by 1 minute
+            inner_guard.last_updated = Utc::now().naive_local() - self.config.update_interval
+                + chrono::Duration::minutes(1);
+        }
+
+        println!("Fetching new data");
+        match Inner::fetch(&self.config) {
+            Ok(inner) => {
+                *self.inner.write().unwrap() = inner;
+                self.version.fetch_add(1, Ordering::AcqRel);
+                println!("Update completed, version {}", self.version());
+            }
+            Err(err) => {
+                self.inner.write().unwrap().last_updated = Utc::now().naive_local()
+                    - self.config.update_interval
+                    + chrono::Duration::minutes(1);
+                eprintln!("Failed to fetch {err:#}, retry in 1 minute");
+            }
+        }
     }
 }
