@@ -1,34 +1,43 @@
-use crate::domain::{fetch, Bus, Schedule, Stop};
+use chrono::NaiveDateTime;
 
-use super::ConfigService;
+use crate::{
+    config::Config,
+    domain::{fetch, Bus, Schedule, Stop},
+};
 
 pub struct FetchService {
-    #[allow(dead_code)]
-    config: ConfigService,
     buses: Vec<Bus>,
     schedule: Vec<Schedule>,
     stops: Vec<Stop>,
+    #[allow(dead_code)]
+    config: Config,
+    #[allow(dead_code)]
+    last_update: NaiveDateTime,
 }
 
 impl FetchService {
-    pub fn new(config: ConfigService) -> anyhow::Result<Self> {
+    pub fn new(config: Config) -> anyhow::Result<Self> {
         Ok(Self {
-            buses: fetch(config.buses_url())?,
-            schedule: fetch(config.schedule_url())?,
-            stops: fetch(config.stops_url())?,
+            buses: fetch(&config.buses_url)?,
+            schedule: fetch(&config.schedule_url)?,
+            stops: fetch(&config.stops_url)?,
             config,
+            last_update: NaiveDateTime::default(),
         })
     }
 
     #[cfg(test)]
     pub fn for_tests() -> Self {
+        use chrono::Utc;
+
         use crate::domain::{parse_list, TEST_BUSES, TEST_SCHEDULE, TEST_STOPS};
 
         Self {
-            config: ConfigService::new().unwrap(),
+            config: Config::default(),
             buses: parse_list(TEST_BUSES).unwrap(),
             schedule: parse_list(TEST_SCHEDULE).unwrap(),
             stops: parse_list(TEST_STOPS).unwrap(),
+            last_update: Utc::now().naive_local(),
         }
     }
 

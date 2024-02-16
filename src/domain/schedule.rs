@@ -36,17 +36,6 @@ impl FromStr for Direction {
     }
 }
 
-// impl Direction {
-//     pub fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: Deserializer<'de>,
-//     {
-//         Cow::<&str>::deserialize(deserializer)?
-//             .parse()
-//             .map_err(de::Error::custom)
-//     }
-// }
-
 impl TryFrom<&Value> for Schedule {
     type Error = anyhow::Error;
 

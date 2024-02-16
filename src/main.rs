@@ -5,19 +5,21 @@ use std::{
 };
 
 use chrono::NaiveDateTime;
+use config::Config;
 use futures_util::FutureExt;
 use rust_socketio::{asynchronous::ClientBuilder, Event, Payload};
 use tokio::signal;
 
+mod config;
 mod domain;
 mod services;
 
 use domain::Location;
-use services::{BusService, ConfigService, FetchService, RideService, RouteService};
+use services::{BusService, FetchService, RideService, RouteService};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let config = ConfigService::new()?;
+    let config = Config::load()?;
 
     if args().nth(1).as_deref() == Some("fetch") {
         return fetch_test_data(&config);
@@ -32,7 +34,7 @@ async fn main() -> anyhow::Result<()> {
         bus_service.number_of_buses(),
     )));
 
-    ClientBuilder::new(config.app_socket())
+    ClientBuilder::new(config.app_socket)
         .namespace("/")
         .on_any(move |event, payload, _client| {
             let bus_service = bus_service.clone();
@@ -133,23 +135,23 @@ fn process_location_update(
     }
 }
 
-fn fetch_test_data(config: &ConfigService) -> anyhow::Result<()> {
+fn fetch_test_data(config: &Config) -> anyhow::Result<()> {
     println!("Fetching test data");
 
     std::io::copy(
-        &mut ureq::get(config.buses_url()).call()?.into_reader(),
+        &mut ureq::get(&config.buses_url).call()?.into_reader(),
         &mut std::fs::File::create("data/buses.json")?,
     )?;
     println!("Buses OK");
 
     std::io::copy(
-        &mut ureq::get(config.schedule_url()).call()?.into_reader(),
+        &mut ureq::get(&config.schedule_url).call()?.into_reader(),
         &mut std::fs::File::create("data/schedule.json")?,
     )?;
     println!("Schedule OK");
 
     std::io::copy(
-        &mut ureq::get(config.stops_url()).call()?.into_reader(),
+        &mut ureq::get(&config.stops_url).call()?.into_reader(),
         &mut std::fs::File::create("data/stops.json")?,
     )?;
     println!("Stops OK");
