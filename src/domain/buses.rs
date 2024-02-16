@@ -84,13 +84,9 @@ impl TryFrom<&Value> for Bus {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        domain::{BUS_ENDPOINT, TEST_BUSES},
-        test_fetch, test_parse,
-    };
+    use crate::{domain::TEST_BUSES, test_parse};
 
     use super::*;
 
     test_parse!(Bus, TEST_BUSES, 14);
-    test_fetch!(Bus, BUS_ENDPOINT, 14);
 }

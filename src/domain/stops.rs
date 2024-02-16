@@ -126,13 +126,9 @@ impl TryFrom<&Value> for Stop {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        domain::{STOP_ENDPOINT, TEST_STOPS},
-        test_fetch, test_parse,
-    };
+    use crate::{domain::TEST_STOPS, test_parse};
 
     use super::*;
 
     test_parse!(Stop, TEST_STOPS, 52);
-    test_fetch!(Stop, STOP_ENDPOINT, 52);
 }

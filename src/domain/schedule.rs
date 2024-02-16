@@ -101,13 +101,9 @@ impl AsRef<NaiveTime> for SmartBusTime {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        domain::{SCHEDULE_ENDPOINT, TEST_SCHEDULE},
-        test_fetch, test_parse,
-    };
+    use crate::{domain::TEST_SCHEDULE, test_parse};
 
     use super::*;
 
     test_parse!(Schedule, TEST_SCHEDULE, 34);
-    test_fetch!(Schedule, SCHEDULE_ENDPOINT, 34);
 }

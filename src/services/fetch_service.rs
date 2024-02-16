@@ -1,4 +1,4 @@
-use crate::domain::{fetch_buses, fetch_shedule, fetch_stops, Bus, Schedule, Stop};
+use crate::domain::{fetch, Bus, Schedule, Stop};
 
 use super::ConfigService;
 
@@ -13,10 +13,10 @@ pub struct FetchService {
 impl FetchService {
     pub fn new(config: ConfigService) -> anyhow::Result<Self> {
         Ok(Self {
+            buses: fetch(config.buses_url())?,
+            schedule: fetch(config.schedule_url())?,
+            stops: fetch(config.stops_url())?,
             config,
-            buses: fetch_buses()?,
-            schedule: fetch_shedule()?,
-            stops: fetch_stops()?,
         })
     }
 

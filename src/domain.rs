@@ -22,10 +22,6 @@ pub use schedule::Schedule;
 pub use stops::Stop;
 pub use terminal::Terminal;
 
-pub const BUS_ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/Bus!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
-pub const SCHEDULE_ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusOperate!A1:Q100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
-pub const STOP_ENDPOINT: &str = "https://sheets.googleapis.com/v4/spreadsheets/1lj9lfPBxlHo_5eSlm-APASlEWUqzCiccGQDlVlAM9SE/values/BusStop!A1:100/?key=AIzaSyCoS3cw1N9C2pY-WUXRnAAPC5N3sKdd_ak";
-
 #[cfg(test)]
 macro_rules! test_data {
     ($input:literal) => {
@@ -59,19 +55,6 @@ macro_rules! test_parse {
     };
 }
 
-#[cfg(test)]
-#[macro_export]
-macro_rules! test_fetch {
-    ($t:ty, $endpoint:ident, $expected:expr) => {
-        #[test]
-        #[ignore]
-        fn test_fetch() {
-            let list = $crate::domain::fetch::<$t>($endpoint).expect("Fetched list");
-            assert_eq!($expected, list.len());
-        }
-    };
-}
-
 pub fn parse_list<R: Read, T>(input: R) -> anyhow::Result<Vec<T>>
 where
     T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
@@ -96,21 +79,9 @@ where
         .collect())
 }
 
-fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>
+pub fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>
 where
     T: for<'a> TryFrom<&'a Value, Error = anyhow::Error>,
 {
     parse_list(ureq::get(endpoint).call()?.into_reader())
-}
-
-pub fn fetch_buses() -> anyhow::Result<Vec<Bus>> {
-    fetch(BUS_ENDPOINT)
-}
-
-pub fn fetch_shedule() -> anyhow::Result<Vec<Schedule>> {
-    fetch(SCHEDULE_ENDPOINT)
-}
-
-pub fn fetch_stops() -> anyhow::Result<Vec<Stop>> {
-    fetch(STOP_ENDPOINT)
 }
