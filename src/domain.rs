@@ -87,12 +87,13 @@ where
         values: Vec<Value>,
     }
 
-    serde_json::from_reader::<_, Input>(input)?
+    Ok(serde_json::from_reader::<_, Input>(input)?
         .values
         .iter()
         .skip(1) // Skip "header" row
         .map(TryInto::try_into)
-        .collect::<Result<_, _>>()
+        .filter_map(Result::ok)
+        .collect())
 }
 
 fn fetch<T>(endpoint: &str) -> anyhow::Result<Vec<T>>

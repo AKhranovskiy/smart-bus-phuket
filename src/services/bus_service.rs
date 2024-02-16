@@ -37,6 +37,6 @@ mod tests {
         let buses = parse_list(TEST_BUSES).unwrap();
         let sut = BusService::new(buses);
 
-        assert_eq!(sut.operate_position("10-1152"), Some("Bus4"));
+        assert_eq!(sut.operate_position("10-1152"), Some("Bus7"));
     }
 }

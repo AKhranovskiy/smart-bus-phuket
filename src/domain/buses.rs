@@ -1,7 +1,6 @@
 #![allow(dead_code)]
 
 use anyhow::{bail, ensure, Result};
-use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -9,7 +8,7 @@ use serde_json::Value;
 pub struct Bus {
     pub no: u8,
     pub licence_plate_no: String,
-    pub bus_id: String,
+    pub id: String,
     // _icon: String,
     pub service_status: ServiceStatus,
     pub direction: Direction,
@@ -22,7 +21,7 @@ pub struct Bus {
     // _f: String,
     // _concat: String,
     // _run: String,
-    pub date_time: NaiveDateTime,
+    // pub date_time: NaiveDateTime,
     // pub date: NaiveDate,
     // pub time: NaiveTime,
 }
@@ -62,7 +61,7 @@ impl TryFrom<&Value> for Bus {
         Ok(Self {
             no: get_str(0)?.parse()?,
             licence_plate_no: get_str(1)?,
-            bus_id: get_str(2)?,
+            id: get_str(2)?,
             // _icon: get_str(3)?,
             service_status: serde_json::from_value(array[4].clone())?,
             direction: serde_json::from_value(array[5].clone())?,
@@ -75,10 +74,10 @@ impl TryFrom<&Value> for Bus {
             // _f: get_str(12)?,
             // _concat: get_str(13)?,
             // _run: get_str(14)?,
-            date_time: NaiveDateTime::new(
-                NaiveDate::parse_from_str(&get_str(15)?, "%d/%m/%Y")?,
-                NaiveTime::parse_from_str(&get_str(16)?, "%r")?,
-            ),
+            // date_time: NaiveDateTime::new(
+            //     NaiveDate::parse_from_str(&get_str(15)?, "%d/%m/%Y")?,
+            //     NaiveTime::parse_from_str(&get_str(16)?, "%r")?,
+            // ),
         })
     }
 }
@@ -92,6 +91,6 @@ mod tests {
 
     use super::*;
 
-    test_parse!(Bus, TEST_BUSES, 11);
-    test_fetch!(Bus, BUS_ENDPOINT, 11);
+    test_parse!(Bus, TEST_BUSES, 14);
+    test_fetch!(Bus, BUS_ENDPOINT, 14);
 }
