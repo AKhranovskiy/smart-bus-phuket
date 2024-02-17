@@ -36,17 +36,6 @@ impl FromStr for Direction {
     }
 }
 
-// impl Direction {
-//     pub fn deserialize<'de, D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: Deserializer<'de>,
-//     {
-//         Cow::<&str>::deserialize(deserializer)?
-//             .parse()
-//             .map_err(de::Error::custom)
-//     }
-// }
-
 impl TryFrom<&Value> for Schedule {
     type Error = anyhow::Error;
 
@@ -101,13 +90,9 @@ impl AsRef<NaiveTime> for SmartBusTime {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        domain::{SCHEDULE_ENDPOINT, TEST_SCHEDULE},
-        test_fetch, test_parse,
-    };
+    use crate::{domain::TEST_SCHEDULE, test_parse};
 
     use super::*;
 
     test_parse!(Schedule, TEST_SCHEDULE, 34);
-    test_fetch!(Schedule, SCHEDULE_ENDPOINT, 34);
 }

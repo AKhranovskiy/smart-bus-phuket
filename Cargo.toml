@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.79"
 chrono = { version = "0.4.34", features = ["serde"] }
+config = { version = "0.14.0", default-features = false, features = ["async", "toml"] }
 futures-util = "0.3.30"
 geoutils = "0.5.1"
 itertools = "0.12.1"

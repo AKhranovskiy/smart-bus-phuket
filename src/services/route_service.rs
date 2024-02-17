@@ -2,41 +2,46 @@ use std::{
     collections::BTreeMap,
     iter::once,
     ops::Bound::{Included, Unbounded},
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc, RwLock,
+    },
 };
 
 use itertools::Itertools;
 
 use crate::domain::{Coordinates, Latitude, RouteDirection, Stop, Terminal};
 
+use super::FetchService;
+
 pub struct RouteService {
+    fetch_service: Arc<FetchService>,
+    current_version: AtomicU64,
+    inner: RwLock<Inner>,
+}
+
+#[derive(Debug, Clone, Default)]
+struct Inner {
     north: BTreeMap<Latitude, Stop>,
     south: BTreeMap<Latitude, Stop>,
 }
 
 impl RouteService {
-    pub fn new(stops: &[Stop]) -> Self {
-        let build = |terminal: Terminal| {
-            stops
-                .iter()
-                .filter(|s| s.route_direction == terminal)
-                .cloned()
-                .sorted_by_key(|s| s.order)
-                .chain(once(terminal.stop(stops)))
-                .map(|s| (s.coordinates.latitude, s))
-                .collect()
-        };
-
+    pub fn new(fetch_service: Arc<FetchService>) -> Self {
         Self {
-            north: build(Terminal::Airport),
-            south: build(Terminal::Rawai),
+            fetch_service,
+            current_version: AtomicU64::default(),
+            inner: RwLock::default(),
         }
     }
 
     #[allow(clippy::cast_possible_truncation)]
-    pub fn locate(&self, dir: RouteDirection, pos: Coordinates) -> Option<(&Stop, &Stop)> {
+    pub fn locate(&self, dir: RouteDirection, pos: Coordinates) -> Option<(Stop, Stop)> {
+        self.update_if_neeeded();
+
         let stops = match dir {
-            RouteDirection::North => &self.north,
-            RouteDirection::South => &self.south,
+            RouteDirection::North => self.inner.read().unwrap().north.clone(),
+            RouteDirection::South => self.inner.read().unwrap().south.clone(),
         };
 
         let mut previous_it = stops.range((Unbounded, Included(pos.latitude)));
@@ -57,7 +62,43 @@ impl RouteService {
             std::mem::swap(&mut previous, &mut next);
         }
 
-        previous.map(|s| s.1).zip(next.map(|s| s.1))
+        previous.map(|s| s.1.clone()).zip(next.map(|s| s.1.clone()))
+    }
+
+    fn update_if_neeeded(&self) {
+        if self.current_version.load(Ordering::Acquire) == self.fetch_service.version() {
+            return;
+        }
+
+        let stops = self.fetch_service.stops();
+
+        let build = |terminal: Terminal| {
+            stops
+                .iter()
+                .filter(|s| s.route_direction == terminal)
+                .cloned()
+                .sorted_by_key(|s| s.order)
+                .chain(once(terminal.stop(&stops)))
+                .map(|s| (s.coordinates.latitude, s))
+                .collect()
+        };
+        let inner = Inner {
+            north: build(Terminal::Airport),
+            south: build(Terminal::Rawai),
+        };
+
+        if self.current_version.load(Ordering::Acquire) == self.fetch_service.version() {
+            return;
+        }
+
+        *self.inner.write().unwrap() = inner;
+        self.current_version
+            .store(self.fetch_service.version(), Ordering::Relaxed);
+
+        println!(
+            "Routes updated, version {}",
+            self.current_version.load(Ordering::Acquire)
+        );
     }
 }
 
@@ -66,7 +107,7 @@ mod tests {
     use itertools::Itertools;
     use rstest::rstest;
 
-    use crate::domain::{parse_list, Longitude, TEST_STOPS};
+    use crate::domain::Longitude;
 
     use super::*;
 
@@ -78,21 +119,31 @@ mod tests {
     const NEAR_RAWAI: Coordinates = Coordinates::new(Longitude(98.321_785), Latitude(7.782_087));
 
     fn sut() -> RouteService {
-        RouteService::new(&parse_list(TEST_STOPS).unwrap())
+        RouteService::new(Arc::new(FetchService::for_tests()))
     }
 
     #[test]
     #[ignore]
-    fn routes() {
-        let sut = RouteService::new(&parse_list(TEST_STOPS).unwrap());
+    fn print_routes() {
+        let sut = sut();
+        sut.update_if_neeeded();
 
         println!(
             "NORTH: {}",
-            sut.north.values().map(|s| s.name.as_str()).join(" > ")
+            sut.inner
+                .read()
+                .unwrap()
+                .north
+                .values()
+                .map(|s| s.name.as_str())
+                .join(" > ")
         );
         println!(
             "SOUTH: {}",
-            sut.south
+            sut.inner
+                .read()
+                .unwrap()
+                .south
                 .values()
                 .rev()
                 .map(|s| s.name.as_str())
