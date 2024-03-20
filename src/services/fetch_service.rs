@@ -41,7 +41,7 @@ impl Inner {
             buses: parse_list(TEST_BUSES).unwrap(),
             schedule: parse_list(TEST_SCHEDULE).unwrap(),
             stops: parse_list(TEST_STOPS).unwrap(),
-            last_updated: Utc::now().naive_local() + chrono::Duration::days(365),
+            last_updated: Utc::now().naive_local() + chrono::TimeDelta::try_days(365).unwrap(),
         }
     }
 }
@@ -98,7 +98,7 @@ impl FetchService {
             }
             // Postpone other attempts by 1 minute
             inner_guard.last_updated = Utc::now().naive_local() - self.config.update_interval
-                + chrono::Duration::minutes(1);
+                + chrono::TimeDelta::try_minutes(1).unwrap();
         }
 
         println!("Fetching new data");
@@ -111,7 +111,7 @@ impl FetchService {
             Err(err) => {
                 self.inner.write().unwrap().last_updated = Utc::now().naive_local()
                     - self.config.update_interval
-                    + chrono::Duration::minutes(1);
+                    + chrono::TimeDelta::try_minutes(1).unwrap();
                 eprintln!("Failed to fetch {err:#}, retry in 1 minute");
             }
         }

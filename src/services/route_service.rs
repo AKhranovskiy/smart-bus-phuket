@@ -104,7 +104,6 @@ impl RouteService {
 
 #[cfg(test)]
 mod tests {
-    use itertools::Itertools;
     use rstest::rstest;
 
     use crate::domain::Longitude;

@@ -5,7 +5,7 @@ pub struct Config {
     pub buses_url: String,
     pub schedule_url: String,
     pub stops_url: String,
-    pub update_interval: chrono::Duration,
+    pub update_interval: chrono::TimeDelta,
 }
 
 impl Config {
@@ -31,7 +31,8 @@ impl Config {
                 "https://sheets.googleapis.com/v4/spreadsheets/{resource}/values/{}/?key={api_key}",
                 config.get_string("stops")?
             ),
-            update_interval: chrono::Duration::minutes(config.get_int("update_interval_min")?),
+            update_interval: chrono::TimeDelta::try_minutes(config.get_int("update_interval_min")?)
+                .ok_or_else(|| anyhow::anyhow!("Invalid update interval"))?,
         })
     }
 }
